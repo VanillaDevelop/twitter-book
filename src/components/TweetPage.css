@@ -1,0 +1,8 @@
+.page {
+    height: 297mm;
+    width: 210mm;
+}
+
+.pageContent {
+    padding: 10mm;
+}
