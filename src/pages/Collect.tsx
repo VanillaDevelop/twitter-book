@@ -1,22 +1,48 @@
 import {useState} from "react";
-import {test_tweet} from "../functions/twitter_utils";
+import {get_tweet_generator} from "../functions/twitter_utils";
+import { Tweet } from "@the-convocation/twitter-scraper";
+import DisplayTweet from "../components/Tweet";
 
 export default function Collect()
 {
-    const [tweetText, setTweetText] = useState("");
+    const [tweets, setTweets] = useState([] as Tweet[]);
 
-    async function getTweet()
+    async function get_tweets()
     {
-        const tweet = await test_tweet();
-        setTweetText(tweet)
+        setTweets([])
+
+        const generator = await get_tweet_generator("Twitter")
+
+        for await (const tweet of generator) {
+            setTweets((tweets) => [...tweets, tweet]);
+        }
+    }
+
+    async function update_and_save_tweets()
+    {
+        await get_tweets()
+        localStorage.setItem("tweetbook_tweets", JSON.stringify(tweets))
+    }
+
+    function load_tweets()
+    {
+        const tweets = JSON.parse(localStorage.getItem("tweetbook_tweets") || "[]")
+        console.log(tweets)
+        setTweets(tweets)
     }
 
     return (
         <>
             <div>
-                {tweetText}
+                Number of tweets: {tweets.length}
             </div>
-            <button onClick={() => getTweet()}>Test get new tweet</button>
+            <div>
+                {tweets.map((tweet, index) => { 
+                    return <DisplayTweet tweet={tweet} key={index} />
+                })}
+            </div>
+            <button onClick={() => update_and_save_tweets()}>Test get new tweet</button>
+            <button onClick={() => load_tweets()}>Test load tweets</button>
         </>
     )
 }

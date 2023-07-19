@@ -1,4 +1,4 @@
-import { Scraper } from "@the-convocation/twitter-scraper";
+import { Scraper, Tweet } from "@the-convocation/twitter-scraper";
 
 const scraper = new Scraper({
     transform: {
@@ -22,11 +22,10 @@ const scraper = new Scraper({
     },
   });
 
-export async function test_tweet() : Promise<string>
+export async function get_tweet_generator(username : string) : Promise<AsyncGenerator<Tweet, void, unknown>>
 {
-    const latestTweet = await scraper.getLatestTweet("twitter");
-    if (latestTweet) {
-        return latestTweet.text!
-    }
-    return "No tweet found"
+    const userId = await scraper.getUserIdByScreenName(username)
+    const tweetGenerator = scraper.getTweetsByUserId(userId, 9999);
+
+    return tweetGenerator;
 }
