@@ -1,31 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './pages/App.tsx'
-import Book from './pages/Book.tsx'
-import './index.css'
-import {
-  createBrowserRouter,
-  RouterProvider
-} from "react-router-dom";
-import Collect from './pages/Collect.tsx'
+import App from './App'
+import './index.scss'
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />
-  },
-  {
-    path: "/book",
-    element: <Book />
-  },
-  {
-    path: "/collect",
-    element: <Collect />
-  }
-])
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <App />
   </React.StrictMode>,
 )
+
+postMessage({ payload: 'removeLoading' }, '*')
