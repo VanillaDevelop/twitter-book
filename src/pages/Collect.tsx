@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {get_user_profile, get_tweet_generator, login_to_scraper, test_login} from "../functions/twitter_utils";
 import { Profile, Tweet } from "@the-convocation/twitter-scraper";
-import DisplayTweet from "../components/Tweet";
+import DisplayTweet from "../components/Tweet/Tweet";
 
 export default function Collect()
 {

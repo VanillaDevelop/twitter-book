@@ -1,4 +1,4 @@
-import "./TweetPage.css";
+import "./TweetPage.scss";
 export default function TweetPage({backgroundColor} : {backgroundColor: string}) {
     return (
         <div className="page" style={{backgroundColor: backgroundColor}}>
