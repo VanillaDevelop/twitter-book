@@ -1,4 +1,4 @@
-import TweetPage from "../components/TweetPage";
+import TweetPage from "../components/TweetPage/TweetPage";
 
 export default function Book() {
 
