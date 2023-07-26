@@ -7,9 +7,15 @@
     box-shadow: 5px 10px 10px #141414;
 }
 
-.profileCard.moveLeft
-{
-    animation: moveLeft 0.5s forwards;
+@keyframes fadeOutAndMoveRight {
+    0% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(50px);
+    }
 }
 
 @keyframes fadeOutAndMoveLeft {
@@ -23,20 +29,14 @@
     }
 }
 
-.profileCard.moveRight
+.profileCard.movingLeft
 {
-    animation: moveRight 0.5s forwards;
+    animation: fadeOutAndMoveRight 0.5s forwards;
 }
 
-@keyframes fadeOutAndMoveRight {
-    0% {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    100% {
-      opacity: 0;
-      transform: translateX(50px);
-    }
+.profileCard.movingRight
+{
+    animation: fadeOutAndMoveLeft 0.5s forwards;
 }
 
 .emptyProfile
