@@ -9,6 +9,7 @@ export default function ProfileWheel(props: {profiles: User[]})
 {
 
     const [profileId, setProfileId] = useState(props.profiles.length > 1 ? 1 : 0)
+    const [moving, setMoving] = useState("")
     
     function returnProfileAtId(id: number) : ReactNode
     {
@@ -22,17 +23,21 @@ export default function ProfileWheel(props: {profiles: User[]})
         }
         else
         {
-            return <EmptyProfile small={id==profileId}/>
+            return <EmptyProfile />
         }
     }
 
     return (
         <div className="profileWheel">
-            {profileId > 0 && <button onClick={() => setProfileId(profileId - 1)}>&lt;</button>}
+            <button style={profileId > 0 ? {} : {visibility: "hidden"}} onClick={() => setProfileId(profileId - 1)} className="navigateButton">
+                <img src="images/arrow-left-solid.svg" alt="left arrow" />
+            </button>
             {returnProfileAtId(profileId - 1)}
             {returnProfileAtId(profileId)}
             {returnProfileAtId(profileId + 1)}
-            {profileId < props.profiles.length && <button onClick={() => setProfileId(profileId + 1)}>&gt;</button>}
+            <button style={profileId < props.profiles.length ? {} : {visibility: "hidden"}} className="navigateButton" onClick={() => setProfileId(profileId + 1)}>
+                <img src="images/arrow-right-solid.svg" alt="right arrow" />
+            </button>
         </div>
     )
 }

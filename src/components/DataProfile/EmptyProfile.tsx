@@ -1,10 +1,8 @@
 import "./DataProfile.scss"
 
-export default function EmptyProfile(props : {small: boolean})
+export default function EmptyProfile()
 {
     return (
-        <div className={`emptyProfile ${props.small ? "small" : ""}`}>
-
-        </div>
+        <div className="emptyProfile" />
     )
 }
