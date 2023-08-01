@@ -17,3 +17,30 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+.text-center {
+  text-align: center;
+}
+
+.center-flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.backButton {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: rgb(255, 255, 255);
+  -webkit-mask: url("images/circle-left-solid.svg") no-repeat center;
+  mask: url("images/circle-left-solid.svg") no-repeat cen
+}

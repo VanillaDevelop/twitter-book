@@ -3,9 +3,10 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    max-width: 1000px;
+    width:80%;
+    min-width:1000px;
+    max-width:1500px;
     margin: 0 auto;
-    height: 100%;
 }
 
 .navigateButton {

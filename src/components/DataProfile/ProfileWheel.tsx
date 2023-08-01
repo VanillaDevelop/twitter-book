@@ -2,6 +2,7 @@ import {User} from "types"
 import DataProfile from "./DataProfile"
 import {ReactNode, useState} from "react"
 import "./ProfileWheel.scss"
+import NewProfileContent from "./NewProfileContent"
 
 export default function ProfileWheel(props: {profiles: User[]})
 {
@@ -31,7 +32,10 @@ export default function ProfileWheel(props: {profiles: User[]})
         }
         else if(id == props.profiles.length)
         {
-            return <DataProfile small={id!=profileId} moving={moving} animationCallback={doneMoving}/>
+            return (
+            <DataProfile small={id!=profileId} moving={moving} animationCallback={doneMoving}>
+                <NewProfileContent/>
+            </DataProfile> )
         }
         else
         {
