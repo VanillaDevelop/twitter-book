@@ -1,5 +1,6 @@
 import { useRef } from "react"
 import "./NewProfileContent.scss"
+import {unpackZipFile} from "../../functions/fs_utils"
 
 export default function NewProfileContent()
 {
@@ -13,7 +14,8 @@ export default function NewProfileContent()
         if(fileInputRef.current?.files)
         {
             const file = fileInputRef.current.files[0]
-            console.log(file)
+            //try to add this data profile
+            const valid = unpackZipFile(file)
         }
     }
 
