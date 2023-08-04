@@ -1,10 +1,10 @@
-import {User} from "types"
 import DataProfile from "./DataProfile"
 import {ReactNode, useState} from "react"
 import "./ProfileWheel.scss"
 import NewProfileContent from "./NewProfileContent"
+import { DataProfileType } from "@/contexts/DataProfileContext"
 
-export default function ProfileWheel(props: {profiles: User[]})
+export default function ProfileWheel(props: {profiles: DataProfileType[]})
 {
 
     const [profileId, setProfileId] = useState(props.profiles.length > 1 ? 1 : 0)

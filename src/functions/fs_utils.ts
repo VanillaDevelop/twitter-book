@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { v4 as uuidv4 } from 'uuid';
+import { DataProfileType } from "@/contexts/DataProfileContext";
 
 const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
 
@@ -97,4 +98,18 @@ export async function unpackZipFile(file: File)
 
     console.log("Successfully unpacked zip file for user " + twitter_handle + " with uuid " + uuid + ".")
     return true;
+}
+
+export function getProfiles() : DataProfileType[]
+{
+    let existing_profiles = {profiles: {} as {[key: string]: string}};
+    if(fs.existsSync(path.join(APP_DATA_PATH, "dataprofiles.json")))
+    {
+        existing_profiles = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, "dataprofiles.json"), "utf-8"));
+    }
+    //map profiles to objects of type DataProfileType
+    const profiles = Object.keys(existing_profiles.profiles).map((key) => {
+        return {uuid: existing_profiles.profiles[key], twitter_handle: key};
+    });
+    return profiles;
 }
