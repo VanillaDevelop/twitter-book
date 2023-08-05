@@ -2,7 +2,7 @@ import DataProfile from "./DataProfile"
 import {ReactNode, useState} from "react"
 import "./ProfileWheel.scss"
 import NewProfileContent from "./NewProfileContent"
-import { DataProfileType } from "@/contexts/DataProfileContext"
+import { DataProfileType } from "@/types"
 
 export default function ProfileWheel(props: {profiles: DataProfileType[]})
 {

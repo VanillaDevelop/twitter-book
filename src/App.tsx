@@ -3,7 +3,8 @@ import Home from './pages/Home'
 import Collect from './pages/Collect'
 import Book from './pages/Book'
 import { useState, useEffect } from "react";
-import { DataProfileContext, DataProfileContextType, DataProfileType } from "@/contexts/DataProfileContext";
+import { DataProfileContext } from "@/contexts/DataProfileContext";
+import { DataProfileType, DataProfileContextType } from "./types";
 import { getProfiles } from './functions/fs_utils';
 
 export default function App() {

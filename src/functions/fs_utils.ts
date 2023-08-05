@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileType } from "@/contexts/DataProfileContext";
+import { DataProfileType } from "@/types";
 
 const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
 
