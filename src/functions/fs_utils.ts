@@ -109,7 +109,20 @@ export function getProfiles() : DataProfileType[]
     }
     //map profiles to objects of type DataProfileType
     const profiles = Object.keys(existing_profiles.profiles).map((key) => {
-        return {uuid: existing_profiles.profiles[key], twitter_handle: key};
+        return create_new_profile(existing_profiles.profiles[key], key)
     });
     return profiles;
+}
+
+
+function create_new_profile(uuid: string, twitter_handle: string) : DataProfileType
+{
+    const new_profile = {
+        uuid: uuid,
+        twitter_handle: twitter_handle,
+        has_tweets: false,
+        tweets: [],
+        has_contexts: false
+    };
+    return new_profile;
 }
