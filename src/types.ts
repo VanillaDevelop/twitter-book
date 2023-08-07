@@ -3,7 +3,7 @@ export interface DataProfileType
     uuid: string;
     twitter_handle: string;
     has_tweets: boolean,
-    tweets: Tweet[],
+    tweets: TweetType[],
     has_contexts: boolean
 }
 
@@ -13,9 +13,16 @@ export interface DataProfileContextType
     setDataProfiles: (dataProfiles: DataProfileType[]) => void;
 }
 
-export interface Tweet 
+export interface TweetType 
 {
     id: string;
     text: string;
     created_at: string;
+}
+
+export interface PopUpType
+{
+    title: string;
+    text: string;
+    id: string;
 }

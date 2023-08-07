@@ -3,7 +3,6 @@
     position: fixed;
     width: 300px;
     height: 70px;
-    bottom: 1em;
     right: -300px; /* Start offscreen */
     background-color: rgba(107, 0, 0, 0.281);
     color: white;
@@ -18,7 +17,7 @@
 
     &:hover {
         opacity: 1;
-        transition: opacity 0.3s ease-in-out;
+        transition: opacity 0s ease-in-out;
     }
 
     &.no-fadeout {
