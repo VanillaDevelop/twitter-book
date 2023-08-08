@@ -2,14 +2,21 @@ import DataProfile from "./DataProfile"
 import {ReactNode, useState} from "react"
 import "./ProfileWheel.scss"
 import NewProfileContent from "./NewProfileContent"
-import { DataProfileType } from "@/types"
+import { DataProfileType, PopUpType } from "@/types"
+import PopUpHolder from "../PopUp/PopUpHolder"
+import {v4 as uuidv4} from "uuid"
 
 export default function ProfileWheel(props: {profiles: DataProfileType[]})
 {
 
     const [profileId, setProfileId] = useState(props.profiles.length > 1 ? 1 : 0)
+    const [popUps, setPopUps] = useState<PopUpType[]>([]);
     const [moving, setMoving] = useState("")
     
+    function addPopUp(popUpText: string)
+    {
+        setPopUps(oldPopUps => [...oldPopUps, {id: uuidv4(), text: popUpText, title: "Error"}])
+    }
 
     function doneMoving()
     {
@@ -34,7 +41,7 @@ export default function ProfileWheel(props: {profiles: DataProfileType[]})
         {
             return (
             <DataProfile small={id!=profileId} moving={moving} animationCallback={doneMoving}>
-                <NewProfileContent/>
+                <NewProfileContent addPopUp={addPopUp} />
             </DataProfile> )
         }
         else
@@ -54,6 +61,7 @@ export default function ProfileWheel(props: {profiles: DataProfileType[]})
             <button style={profileId < props.profiles.length ? {} : {visibility: "hidden"}} className="navigateButton" onClick={() => setMoving("movingRight")}>
                 <img src="images/arrow-right-solid.svg" alt="right arrow" />
             </button>
+            <PopUpHolder popUps={popUps} destroyPopUp={(id) => setPopUps(oldPopUps => oldPopUps.filter((popUp) => popUp.id !== id))}/>
         </div>
     )
 }

@@ -10,7 +10,7 @@ export interface DataProfileType
 export interface DataProfileContextType
 {
     dataProfiles: DataProfileType[];
-    setDataProfiles: (dataProfiles: DataProfileType[]) => void;
+    setDataProfiles: (profiles: DataProfileType[]) => void;
 }
 
 export interface TweetType 

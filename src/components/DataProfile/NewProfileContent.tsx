@@ -1,22 +1,37 @@
-import { useRef } from "react"
+import { useContext, useRef } from "react"
 import "./NewProfileContent.scss"
-import {unpackZipFile} from "../../functions/fs_utils"
+import {checkFileStructure, unpackZipFile} from "../../functions/fs_utils"
+import { DataProfileContext } from "@/contexts/DataProfileContext"
 
-export default function NewProfileContent()
+export default function NewProfileContent(props : {addPopUp: (popUpText: string) => void})
 {
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const profileContext = useContext(DataProfileContext)
 
     const handleImportDataClick = () => {
         fileInputRef.current?.click()
     }
 
-    const handleFileInputChange = () => {
-        if(fileInputRef.current?.files)
+    const handleFileInputChange = async () => 
+    {
+        if(!fileInputRef.current?.files)
         {
-            const file = fileInputRef.current.files[0]
-            //try to add this data profile
-            const valid = unpackZipFile(file)
+            props.addPopUp("No file was selected.")
+            return
         }
+        const file = fileInputRef.current.files[0]
+
+        // sanity check file
+        const error = await checkFileStructure(file, profileContext.dataProfiles);
+
+        if(error)
+        {
+            props.addPopUp(error)
+            return;
+        }
+
+        const valid = unpackZipFile(file, profileContext)
     }
 
     return (

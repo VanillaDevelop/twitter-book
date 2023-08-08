@@ -1,50 +1,70 @@
 import JSZip from "jszip";
 import fs from "fs";
-import path from "path";
-import os from "os";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileType } from "@/types";
+import { DataProfileContextType, DataProfileType } from "@/types";
+import path from "path";
+import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
 
-const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
-
-export async function unpackZipFile(file: File) 
+export async function checkFileStructure(file: File, profiles: DataProfileType[]) : Promise<string | void>
 {
-    if(!fs.existsSync(APP_DATA_PATH))
+    //Check if file is a zip file
+    if(file.type !== "application/x-zip-compressed")
     {
-        fs.mkdirSync(APP_DATA_PATH);
+        //cap file name at 15 characters
+        const file_name = file.name.length > 15 ? file.name.substring(0, 15) + "..." : file.name;
+        return `File ${file_name} is not a zip file. Please upload a Twitter data folder.`;
     }
-    let existing_profiles = {profiles: {} as {[key: string]: string}};
-    if(fs.existsSync(path.join(APP_DATA_PATH, "dataprofiles.json")))
+
+    //Check if file contains data/account.js
+    const zip = await JSZip.loadAsync(file);
+    if (!zip.file("data/account.js")) 
     {
-        existing_profiles = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, "dataprofiles.json"), "utf-8"));
+        return "The required file data/account.js does not exist in the ZIP. Are you sure this is a Twitter data folder?";
     }
-    
+
+    //Check if existing profiles contain the twitter handle
+    try 
+    {
+        const account_file = zip.file("data/account.js");
+        const account_json = JSON.parse(await account_file!.async("string").then(s => s.substring(s.indexOf("{"), s.lastIndexOf("}") + 1)));
+        const twitter_handle = account_json.account.username;
+        //if profiles contains the twitter handle, return error
+        if(profiles.map(profile => profile.twitter_handle).includes(twitter_handle))
+        {
+            return `The Twitter handle ${twitter_handle} already has a data profile. Please delete the existing profile first.`;
+        }
+    }
+    catch (error) 
+    {
+        return "Error while parsing data/account.js. Are you sure this is a Twitter data folder?";
+    }
+}
+
+export async function unpackZipFile(file: File, profileContext: DataProfileContextType) 
+    : Promise<boolean>
+{  
     //generate random uuid for the dataprofile
     const uuid = uuidv4();
 
-    //generate folder for the dataprofile
-    fs.mkdirSync(path.join(APP_DATA_PATH, uuid));
-    
     // Wrap the reader logic in a Promise
     const unpacking = new Promise<void>(async (resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async () => {
-            try {
+            try 
+            {
+                //generate folder for the dataprofile
+                fs.mkdirSync(path.join(APP_DATA_PATH, uuid));
+    
                 const zip = await JSZip.loadAsync(reader.result as ArrayBuffer);
-
-                // Check if the file exists within the ZIP
-                const requiredFile = "data/account.js";
-                if (!zip.file(requiredFile)) {
-                reject(new Error(`The required file ${requiredFile} does not exist in the ZIP.`));
-                return;
-                }
 
                 const promises = [] as Promise<void>[];
                 zip.forEach((relativePath, zipEntry) => {
-                    if (!zipEntry.dir) {
+                    if (!zipEntry.dir) 
+                    {
                         const promise = zipEntry.async("nodebuffer").then(content => {
                             const directoryPath = path.join(APP_DATA_PATH, uuid, path.dirname(relativePath));
-                            if (!fs.existsSync(directoryPath)) {
+                            if (!fs.existsSync(directoryPath)) 
+                            {
                                 fs.mkdirSync(directoryPath, { recursive: true });
                             }
                             const filePath = path.join(directoryPath, path.basename(relativePath));
@@ -69,9 +89,8 @@ export async function unpackZipFile(file: File)
     }
     catch(e)
     {
-        //clean up the directory if it exists
-        if(fs.existsSync(path.join(APP_DATA_PATH, uuid)))
-            fs.rmdirSync(path.join(APP_DATA_PATH, uuid), {recursive: true});
+        //clean up the directory 
+        fs.rmdirSync(path.join(APP_DATA_PATH, uuid), {recursive: true});
         return false;
     }
 
@@ -91,29 +110,13 @@ export async function unpackZipFile(file: File)
     }
 
     //add the new dataprofile to the existing profiles
-    existing_profiles.profiles[twitter_handle] = uuid;
-
-    //save the new dataprofile
-    fs.writeFileSync(path.join(APP_DATA_PATH, "dataprofiles.json"), JSON.stringify(existing_profiles));
+    const new_profile = create_new_profile(uuid, twitter_handle);
+    const existing_profiles = profileContext.dataProfiles;
+    profileContext.setDataProfiles([...existing_profiles, new_profile]);
 
     console.log("Successfully unpacked zip file for user " + twitter_handle + " with uuid " + uuid + ".")
     return true;
 }
-
-export function getProfiles() : DataProfileType[]
-{
-    let existing_profiles = {profiles: {} as {[key: string]: string}};
-    if(fs.existsSync(path.join(APP_DATA_PATH, "dataprofiles.json")))
-    {
-        existing_profiles = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, "dataprofiles.json"), "utf-8"));
-    }
-    //map profiles to objects of type DataProfileType
-    const profiles = Object.keys(existing_profiles.profiles).map((key) => {
-        return create_new_profile(existing_profiles.profiles[key], key)
-    });
-    return profiles;
-}
-
 
 function create_new_profile(uuid: string, twitter_handle: string) : DataProfileType
 {
