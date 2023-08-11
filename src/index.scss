@@ -44,3 +44,16 @@ body {
   -webkit-mask: url("images/circle-left-solid.svg") no-repeat center;
   mask: url("images/circle-left-solid.svg") no-repeat cen
 }
+
+.w60c
+{
+  width: 60ch;
+}
+
+.centerContainer
+{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

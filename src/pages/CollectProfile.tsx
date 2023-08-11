@@ -1,3 +1,4 @@
+import CollectTweets from "@/components/CollectProfilePages/CollectTweets";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
 import { DataProfileType } from "@/types";
 import { useContext, useEffect, useState } from "react";
@@ -24,8 +25,10 @@ export default function CollectProfile()
 
     return (
         <div>
-            <h1>Collect Profile</h1>
-
+            <h1 className="text-center">Set Up Profile</h1>
+            <div className="container">
+                {user && !(user?.has_tweets) && <CollectTweets uuid={user.uuid} twitter_handle={user.twitter_handle}/>}
+            </div>
         </div>
     )
 }

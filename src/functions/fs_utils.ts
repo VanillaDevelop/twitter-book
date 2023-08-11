@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileContextType, DataProfileType } from "@/types";
+import { DataProfileContextType, DataProfileType, TweetType } from "@/types";
 import path from "path";
 import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
 
@@ -116,6 +116,79 @@ export async function unpackZipFile(file: File, profileContext: DataProfileConte
 
     console.log("Successfully unpacked zip file for user " + twitter_handle + " with uuid " + uuid + ".")
     return true;
+}
+
+export function getTweetsFromProfile(uuid: string) : TweetType[]
+{
+    const tweet_file = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "data", "tweets.js"), "utf-8");
+    const tweet_json = JSON.parse(tweet_file.substring(tweet_file.indexOf("["), tweet_file.lastIndexOf("]") + 1));
+    const tweetTypeArray = tweet_json.map((tweetObj : any) => {
+        /*
+        export enum MediaType {
+            Photo = "PHOTO",
+            Video = "VIDEO",
+            Gif = "GIF"
+        }
+
+        export interface TweetMediaType
+        {
+            internal_url: string;
+            type: MediaType
+        }
+
+        export interface ReplyElement
+        {
+            original_author_handle: string;
+            original_author_name: string;
+            original_tweet: TweetType;
+        }
+
+        export interface RetweetData
+        {
+            original_author_handle: string;
+            original_author_name: string;
+        }
+
+        export interface TweetType 
+        {
+            id: string;
+            text: string;
+            created_at: Date;
+            parent_tweet_id?: string;
+            direct_rt_data?: RetweetData;
+            qrt_data?: RetweetData;
+            media?: TweetMediaType[];
+        }
+        */
+        
+        let parent_tweet_id = undefined;
+        let direct_rt_data = undefined;
+        let qrt_data = undefined;
+        let media = undefined;
+
+        //pure retweet always starts with RT @
+        if(tweetObj.tweet.full_text.startsWith("RT @"))
+        {
+            //original author is always the first user mention in a pure retweet
+            direct_rt_data = {
+                original_author_handle: tweetObj.tweet.entities.user_mentions[0].screen_name,
+                original_author_name: tweetObj.tweet.entities.user_mentions[0].name,
+            }
+        }
+
+        return {
+            id: tweetObj.tweet.id_str,
+            text: tweetObj.tweet.full_text,
+            created_at: new Date(tweetObj.tweet.created_at),
+            context_collected: false,
+            parent_tweet_id: parent_tweet_id,
+            direct_rt_data: direct_rt_data,
+            qrt_data: qrt_data,
+            media: media
+        };
+    });
+    console.log(tweetTypeArray)
+    return tweetTypeArray.sort((a: TweetType, b: TweetType) => b.created_at.getTime() - a.created_at.getTime());
 }
 
 function create_new_profile(uuid: string, twitter_handle: string) : DataProfileType

@@ -26,11 +26,15 @@ export interface TweetMediaType
 
 export interface ReplyElement
 {
-    original_author_id: string;
-    original_author_display_name: string;
-    original_tweet_text: string;
-    original_tweet_created_at: string;
-    reply_media?: TweetMediaType[];
+    original_author_handle: string;
+    original_author_name: string;
+    original_tweet: TweetType;
+}
+
+export interface RetweetData
+{
+    original_author_handle: string;
+    original_author_name: string;
 }
 
 export interface TweetType 
@@ -38,10 +42,9 @@ export interface TweetType
     id: string;
     text: string;
     created_at: Date;
-    context_collected: boolean;
-    reply_chain?: ReplyElement[];
-    direct_rt_data?: ReplyElement;
-    qrt_data?: ReplyElement;
+    parent_tweet_id?: string;
+    direct_rt_data?: RetweetData;
+    qrt_data?: RetweetData;
     media?: TweetMediaType[];
 }
 
