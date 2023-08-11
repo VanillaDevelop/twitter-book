@@ -101,6 +101,36 @@ h4
     font-size: 0.8em;
 }
 
+.small li {
+    font-size: 0.8em;
+}
+
 .profileContent p {
     padding: 0 1em 0 1em;
+}
+
+.profileContentWrapper
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+.dataActionButton {
+    width: 80%;
+    margin-bottom:1em;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #000;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.small .dataActionButton {
+    font-size: 0.8em;
 }

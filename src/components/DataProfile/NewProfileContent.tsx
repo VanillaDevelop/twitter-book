@@ -1,5 +1,4 @@
 import { useContext, useRef } from "react"
-import "./NewProfileContent.scss"
 import {checkFileStructure, unpackZipFile} from "../../functions/fs_utils"
 import { DataProfileContext } from "@/contexts/DataProfileContext"
 
@@ -35,14 +34,14 @@ export default function NewProfileContent(props : {addPopUp: (popUpText: string)
     }
 
     return (
-        <div className="newProfileContentWrapper">
-            <p className="uploadNewDataParagraph">
+        <div className="profileContentWrapper">
+            <p className="text-center">
                 Start a new data profile by importing your Twitter data. 
                 To do this, request your Twitter data from your account settings,
                 then point to the .zip file. Twitter may take 24 hours or more to 
                 prepare your data.
             </p>
-            <button className="importDataButton" onClick={handleImportDataClick}>Import Twitter Data</button>
+            <button className="dataActionButton" onClick={handleImportDataClick}>Import Twitter Data</button>
             <input ref={fileInputRef} type="file" accept=".zip" style={{display: "none"}} onChange={handleFileInputChange}/>
         </div>
     )

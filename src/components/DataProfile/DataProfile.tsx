@@ -1,21 +1,26 @@
 import { ReactNode } from "react"
 import "./DataProfile.scss"
 import { DataProfileType } from "@/types"
+import { useNavigate } from "react-router-dom"
 
 export default function DataProfile(props: {user?: DataProfileType, children?: ReactNode, small: boolean, moving: string, animationCallback: () => void})
 {
     let userData = null
+    const navigate = useNavigate()
+    
     if(props.user && !(props.user.has_tweets && props.user.has_contexts))
     {
         userData = (
-                <p>
-                    This profile is not fully set up and requires further steps before it can be turned into a book.
-                    <ul>
-                        <li>Data {props.user.has_tweets ? "" : "NOT"} Analyzed</li>
-                        <li>Context {props.user.has_contexts ? "" : "NOT"} Scraped</li>
-                    </ul>
-                    
-                </p>
+                <div className="profileContentWrapper">
+                    <div>
+                        <p>This profile is not fully set up and requires further steps before it can be turned into a book.</p>
+                        <ul>
+                            <li>Data {props.user.has_tweets ? "" : "NOT"} Analyzed</li>
+                            <li>Context {props.user.has_contexts ? "" : "NOT"} Scraped</li>
+                        </ul>
+                    </div>
+                    <button className="dataActionButton" onClick={() => navigate(`/collect/${props.user?.twitter_handle}`)}>Set Up Profile</button>
+                </div>
         )
     }
 
