@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileContextType, DataProfileType, TweetType } from "@/types";
+import { DataProfileContextType, DataProfileType, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import path from "path";
 import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
 
@@ -122,58 +122,80 @@ export function getTweetsFromProfile(uuid: string) : TweetType[]
 {
     const tweet_file = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "data", "tweets.js"), "utf-8");
     const tweet_json = JSON.parse(tweet_file.substring(tweet_file.indexOf("["), tweet_file.lastIndexOf("]") + 1));
-    const tweetTypeArray = tweet_json.map((tweetObj : any) => {
-        /*
-        export enum MediaType {
-            Photo = "PHOTO",
-            Video = "VIDEO",
-            Gif = "GIF"
-        }
-
-        export interface TweetMediaType
-        {
-            internal_url: string;
-            type: MediaType
-        }
-
-        export interface ReplyElement
-        {
-            original_author_handle: string;
-            original_author_name: string;
-            original_tweet: TweetType;
-        }
-
-        export interface RetweetData
-        {
-            original_author_handle: string;
-            original_author_name: string;
-        }
-
-        export interface TweetType 
-        {
-            id: string;
-            text: string;
-            created_at: Date;
-            parent_tweet_id?: string;
-            direct_rt_data?: RetweetData;
-            qrt_data?: RetweetData;
-            media?: TweetMediaType[];
-        }
-        */
-        
+    const tweetTypeArray = tweet_json.map((tweetObj : any) => 
+    {
         let parent_tweet_id = undefined;
-        let direct_rt_data = undefined;
+        let direct_rt_author = undefined;
         let qrt_data = undefined;
         let media = undefined;
+        let urls = undefined;
+        
+        //resolve all (non-media) URLs
+        urls = tweetObj.tweet.entities.urls.map((urlObj : any) => {
+            return {
+                shortened_url: urlObj.url,
+                resolved_url: urlObj.expanded_url,
+            } as URLResolve
+        });
+        if(urls.length == 0)
+        {
+            urls = undefined;
+        }
 
         //pure retweet always starts with RT @
         if(tweetObj.tweet.full_text.startsWith("RT @"))
         {
             //original author is always the first user mention in a pure retweet
-            direct_rt_data = {
-                original_author_handle: tweetObj.tweet.entities.user_mentions[0].screen_name,
-                original_author_name: tweetObj.tweet.entities.user_mentions[0].name,
+            direct_rt_author = tweetObj.tweet.entities.user_mentions[0].screen_name
+        }
+
+        //quote retweet has a url entity at the end that links to a tweet (I think, I don't really know how else to tell)
+        const tweet_url_regex = /https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/[0-9]+/;
+        const tweet_url_shortened_regex = /https:\/\/t.co\/[a-zA-Z0-9]+$/; //only detects shortened URLs at the end of the tweet
+        
+        if(tweet_url_shortened_regex.test(tweetObj.tweet.full_text) && urls)
+        {
+            //get the url
+            const url = tweetObj.tweet.full_text.match(tweet_url_shortened_regex)![0];
+            //check if it resolves to a tweet
+            const last_url = urls.find((urlObj : any) => urlObj.shortened_url === url)
+            if(last_url) // may be a media URL to skip if last_url is not found
+            {
+                const expanded_url = last_url.expanded_url
+                if(tweet_url_regex.test(expanded_url))
+                {
+                    //set qrt data
+                    qrt_data = {
+                        original_author_handle: expanded_url.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/[0-9]+/)![1],
+                        original_tweet_id: expanded_url.match(/https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
+                    }
+                }
             }
+        }
+
+        //reply tweets will have a in_reply_to_status_id and in_reply_to_user_id_str field
+        if(tweetObj.tweet.in_reply_to_status_id_str)
+        {
+            //set parent tweet id
+            parent_tweet_id = tweetObj.tweet.in_reply_to_status_id_str;
+        }
+
+        //we take media data from the extended entities
+        const media_type_map: {[key: string] : string} = {
+            "photo": "PHOTO",
+            "video": "VIDEO",
+            "animated_gif": "GIF"
+        }
+        if(tweetObj.tweet.extended_entities)
+        {
+            //we only store photos, videos, and gifs
+            media = tweetObj.tweet.extended_entities.media.filter((mediaObj : any) => media_type_map.hasOwnProperty(mediaObj.type))
+                .map((mediaObj : any) => {
+                return {
+                    external_url: mediaObj.media_url_https,
+                    type: media_type_map[mediaObj.type] as MediaType
+                } as TweetMediaType;
+            });
         }
 
         return {
@@ -181,10 +203,11 @@ export function getTweetsFromProfile(uuid: string) : TweetType[]
             text: tweetObj.tweet.full_text,
             created_at: new Date(tweetObj.tweet.created_at),
             context_collected: false,
-            parent_tweet_id: parent_tweet_id,
-            direct_rt_data: direct_rt_data,
-            qrt_data: qrt_data,
-            media: media
+            parent_tweet_id,
+            direct_rt_author,
+            qrt_data,
+            media,
+            urls
         };
     });
     console.log(tweetTypeArray)

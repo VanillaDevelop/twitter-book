@@ -20,21 +20,20 @@ export enum MediaType {
 
 export interface TweetMediaType
 {
-    internal_url: string;
+    external_url: string;
     type: MediaType
 }
 
-export interface ReplyElement
+export interface QRTData
 {
     original_author_handle: string;
-    original_author_name: string;
-    original_tweet: TweetType;
+    original_tweet_id: string;
 }
 
-export interface RetweetData
+export interface URLResolve
 {
-    original_author_handle: string;
-    original_author_name: string;
+    shortened_url: string;
+    resolved_url: string;
 }
 
 export interface TweetType 
@@ -43,9 +42,10 @@ export interface TweetType
     text: string;
     created_at: Date;
     parent_tweet_id?: string;
-    direct_rt_data?: RetweetData;
-    qrt_data?: RetweetData;
+    direct_rt_author?: string;
+    qrt_author?: QRTData;
     media?: TweetMediaType[];
+    urls?: URLResolve[];
 }
 
 export interface PopUpType
