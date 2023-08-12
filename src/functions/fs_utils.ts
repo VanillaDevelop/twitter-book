@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DataProfileContextType, DataProfileType, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import path from "path";
 import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
+import { ipcRenderer } from "electron";
 
 export async function checkFileStructure(file: File, profiles: DataProfileType[]) : Promise<string | void>
 {
@@ -225,3 +226,19 @@ function create_new_profile(uuid: string, twitter_handle: string) : DataProfileT
     };
     return new_profile;
 }
+
+export async function getTweetById(tweet_id: string) : Promise<TweetType | undefined>
+{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.once("tweet-return", (event, tweet : TweetType) => {
+            resolve(tweet);
+        });
+        ipcRenderer.send("try-get-tweet", tweet_id);
+
+        setTimeout(() => {
+            reject("Timeout while trying to get tweet with id " + tweet_id);
+        }
+        , 5000);
+    })
+}
+

@@ -1,18 +1,22 @@
-import { Profile, Scraper, Tweet } from "@the-convocation/twitter-scraper";
+import { TweetType } from "@/types";
+import { Profile, Scraper } from "@the-convocation/twitter-scraper";
+import { ipcMain } from "electron";
 
 const scraper = new Scraper();
 
-export async function get_tweet_generator(id : string) : Promise<AsyncGenerator<Tweet, void, unknown>>
+export async function get_tweet(tweet_id: string) : Promise<TweetType | null>
 {
-    const tweetGenerator = scraper.getTweetsByUserId(id, 5)
-    
-    return tweetGenerator;
-}
+    const tweet = await scraper.getTweet(tweet_id);
+    if(tweet == null)
+    {
+        return null;
+    }
 
-export async function login_to_scraper(username : string, password : string) : Promise<void>
-{
-    await scraper.login(username, password)
-    console.log(scraper.isLoggedIn)
+    return {
+        id: tweet.id,
+        text: tweet.text,
+        created_at: new Date(tweet.timestamp!),
+    } as TweetType;
 }
 
 export async function get_user_profile(username : string) : Promise<Profile>
@@ -21,30 +25,7 @@ export async function get_user_profile(username : string) : Promise<Profile>
     return user;
 }
 
-export async function test_login()
-{
-  const scraper = new Scraper({
-    transform: {
-      request(input, init) {
-        // The arguments here are the same as the parameters to fetch(), and
-        // are kept as-is for flexibility of both the library and applications.
-        if (input instanceof URL) {
-          const proxy =
-            "https://corsproxy.io/?" +
-            encodeURIComponent(input.toString());
-          return [proxy, init];
-        } else if (typeof input === "string") {
-          const proxy =
-            "https://corsproxy.io/?" + encodeURIComponent(input);
-          return [proxy, init];
-        } else {
-          // Omitting handling for example
-          throw new Error("Unexpected request input type");
-        }
-      },
-    },
-  });
-
-    await scraper.login("a", "b");
-    console.log("Logged in: " + await scraper.isLoggedIn());
-}
+ipcMain.on("try-get-tweet", async (event, tweet_id) => {
+  const tweet = await get_tweet(tweet_id);
+  event.reply('tweet-return', tweet);
+});
