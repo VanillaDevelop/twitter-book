@@ -220,9 +220,7 @@ function create_new_profile(uuid: string, twitter_handle: string) : DataProfileT
     const new_profile = {
         uuid: uuid,
         twitter_handle: twitter_handle,
-        has_tweets: false,
-        tweets: [],
-        has_contexts: false
+        is_setup: false
     };
     return new_profile;
 }

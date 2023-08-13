@@ -129,6 +129,12 @@ h4
     font-size: 1em;
     font-weight: 600;
     cursor: pointer;
+
+    &:disabled {
+        background-color: #ccc;
+        color: #fff;
+        cursor: not-allowed;
+    }
 }
 
 .small .dataActionButton {

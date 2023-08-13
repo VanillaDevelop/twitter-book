@@ -2,8 +2,7 @@ export interface DataProfileType
 {
     uuid: string;
     twitter_handle: string;
-    has_tweets: boolean,
-    has_contexts: boolean
+    is_setup: boolean;
 }
 
 export interface DataProfileContextType
