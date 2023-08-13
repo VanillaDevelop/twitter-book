@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileContextType, DataProfileType, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
+import { DataProfileContextType, DataProfileType, MediaType, QRTData, TweetMediaType, TweetType, URLResolve } from "@/types";
 import path from "path";
 import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
 import { ipcRenderer } from "electron";
@@ -119,15 +119,20 @@ export async function unpackZipFile(file: File, profileContext: DataProfileConte
     return true;
 }
 
-export function getTweetsFromProfile(uuid: string) : TweetType[]
+export function indexTweetsFromProfile(uuid: string) : void
 {
+    //if we already have the tweets directory, this step should already be taken care of (it's fast, so should not have any intermediate errors)
+    if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets")))
+        return;
+
+    //load tweets from tweets.js and restructure them
     const tweet_file = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "data", "tweets.js"), "utf-8");
     const tweet_json = JSON.parse(tweet_file.substring(tweet_file.indexOf("["), tweet_file.lastIndexOf("]") + 1));
     const tweetTypeArray = tweet_json.map((tweetObj : any) => 
     {
         let parent_tweet_id = undefined;
-        let direct_rt_author = undefined;
-        let qrt_data = undefined;
+        let direct_rt_author_id = undefined;
+        let qrt_tweet_source_id = undefined;
         let media = undefined;
         let urls = undefined;
         
@@ -147,7 +152,7 @@ export function getTweetsFromProfile(uuid: string) : TweetType[]
         if(tweetObj.tweet.full_text.startsWith("RT @"))
         {
             //original author is always the first user mention in a pure retweet
-            direct_rt_author = tweetObj.tweet.entities.user_mentions[0].screen_name
+            direct_rt_author_id = tweetObj.tweet.entities.user_mentions[0].id_str
         }
 
         //quote retweet has a url entity at the end that links to a tweet (I think, I don't really know how else to tell)
@@ -162,14 +167,11 @@ export function getTweetsFromProfile(uuid: string) : TweetType[]
             const last_url = urls.find((urlObj : any) => urlObj.shortened_url === url)
             if(last_url) // may be a media URL to skip if last_url is not found
             {
-                const expanded_url = last_url.expanded_url
+                const expanded_url = last_url.resolved_url
                 if(tweet_url_regex.test(expanded_url))
                 {
                     //set qrt data
-                    qrt_data = {
-                        original_author_handle: expanded_url.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/[0-9]+/)![1],
-                        original_tweet_id: expanded_url.match(/https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
-                    }
+                    qrt_tweet_source_id = expanded_url.match(/https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
                 }
             }
         }
@@ -203,16 +205,21 @@ export function getTweetsFromProfile(uuid: string) : TweetType[]
             id: tweetObj.tweet.id_str,
             text: tweetObj.tweet.full_text,
             created_at: new Date(tweetObj.tweet.created_at),
-            context_collected: false,
             parent_tweet_id,
-            direct_rt_author,
-            qrt_data,
+            direct_rt_author_id,
+            qrt_tweet_source_id,
             media,
             urls
-        };
+        } as TweetType;
     });
-    console.log(tweetTypeArray)
-    return tweetTypeArray.sort((a: TweetType, b: TweetType) => b.created_at.getTime() - a.created_at.getTime());
+
+    //create tweets subdirectory
+    fs.mkdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+
+    tweetTypeArray.forEach((tweet : TweetType) => {
+        //store the tweet to a file 
+        fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet.id + ".json"), JSON.stringify(tweet));
+    });
 }
 
 function create_new_profile(uuid: string, twitter_handle: string) : DataProfileType
@@ -223,6 +230,44 @@ function create_new_profile(uuid: string, twitter_handle: string) : DataProfileT
         is_setup: false
     };
     return new_profile;
+}
+
+export function bootstrapStructuredData(uuid: string) : void
+{
+    const folder = path.join(APP_DATA_PATH, uuid, "structured_data");
+    if (fs.existsSync(folder))
+        return;
+
+    fs.mkdirSync(folder);
+    //place banner and profile picture
+    const profile_media_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "data", "profile.js"), "utf-8");
+    const profile_media_json = JSON.parse(profile_media_data.substring(profile_media_data.indexOf("{"), profile_media_data.lastIndexOf("}") + 1));
+    const avatar_suburl = profile_media_json.profile.avatarMediaUrl.substring(profile_media_json.profile.avatarMediaUrl.lastIndexOf("/") + 1);
+    const banner_suburl = profile_media_json.profile.headerMediaUrl.substring(profile_media_json.profile.headerMediaUrl.lastIndexOf("/") + 1);
+    //find in folder /data/profile_media, but the local file name has a random number prepended
+    const avatar_file = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media")).find((file) => file.includes(avatar_suburl));
+    const banner_file = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media")).find((file) => file.includes(banner_suburl));
+    //copy into the structured data directory
+    fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media", avatar_file!), path.join(APP_DATA_PATH, uuid, "structured_data", "avatar.jpg"));
+    fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media", banner_file!), path.join(APP_DATA_PATH, uuid, "structured_data", "banner.jpg"));
+}
+
+export function collectQRTs(uuid: string) : void
+{
+    //check if we have a file indexing QRTs
+    if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json")))
+    {
+        //create the file by iterating over all tweets and finding QRTs
+        const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+        const tweets_json = tweets.map((tweet_file) => {
+            const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
+            return tweet;
+        });
+        const qrts = tweets_json.filter((tweet) => tweet.qrt_tweet_source_id).map((tweet) => tweet.qrt_tweet_source_id);
+        fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), JSON.stringify({qrts}));
+    }
+    //load the current state from the qrt_index file
+    const qrt_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), "utf-8"); 
 }
 
 export async function getTweetById(tweet_id: string) : Promise<TweetType | undefined>

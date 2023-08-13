@@ -1,4 +1,14 @@
-import { getTweetsFromProfile, getTweetById } from "@/functions/fs_utils"
+import { indexTweetsFromProfile, getTweetById, bootstrapStructuredData, collectQRTs } from "@/functions/fs_utils"
+
+function setUpProfile(uuid: string)
+{
+    //first step: create structured folder and place banenr and profile picture data if it doesn't exist
+    bootstrapStructuredData(uuid)
+    //second step: index tweets from the data profile and store each tweet in a separate file
+    indexTweetsFromProfile(uuid)
+    //third step: collect QRT source tweets
+    collectQRTs(uuid)
+}
 
 export default function CollectTweets(props : {uuid: string, twitter_handle: string})
 {
@@ -28,7 +38,7 @@ export default function CollectTweets(props : {uuid: string, twitter_handle: str
                 Please do not close the program while this process is running, or you may have to re-import the data profile 
                 or start from scratch.
             </p>
-            <button onClick={() => {getTweetsFromProfile(props.uuid)}}>Parse Tweets</button>
+            <button onClick={() => {setUpProfile(props.uuid)}}>Parse Tweets</button>
             <button onClick={() => {getTweetById("1690452400082235393").then((tweet) => console.log(tweet))}}>Test Get Tweet Button</button>
         </div>
     )

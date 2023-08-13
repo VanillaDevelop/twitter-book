@@ -41,8 +41,8 @@ export interface TweetType
     text: string;
     created_at: Date;
     parent_tweet_id?: string;
-    direct_rt_author?: string;
-    qrt_author?: QRTData;
+    direct_rt_author_id?: string;
+    qrt_tweet_source_id?: string;
     media?: TweetMediaType[];
     urls?: URLResolve[];
 }
