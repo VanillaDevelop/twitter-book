@@ -1,19 +1,15 @@
-import { MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
+import { AuthorData, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import { Profile, Scraper } from "@the-convocation/twitter-scraper";
 import { ipcMain } from "electron";
 
 const scraper = new Scraper();
 
-export async function get_tweet(tweet_id: string) : Promise<TweetType>
+export async function get_tweet(tweet_id: string) : Promise<{author: AuthorData, tweet: TweetType} | undefined>
 {
     const tweet = await scraper.getTweet(tweet_id);
     if(tweet === null)
     {
-        return {
-            id: "",
-            text: "Tweet not found",
-            created_at: new Date(),
-        } as TweetType
+        return
     }
 
     //library does not have gifs yet :( it is what it is
@@ -51,7 +47,7 @@ export async function get_tweet(tweet_id: string) : Promise<TweetType>
         }
     }
 
-    return {
+    const tweet_data = {
         id: tweet.id,
         text: tweet.text,
         created_at: new Date(tweet.timestamp!),
@@ -62,6 +58,17 @@ export async function get_tweet(tweet_id: string) : Promise<TweetType>
         media,
         urls
     } as TweetType;
+
+    const author_data = {
+        id: tweet.userId,
+        handle: tweet.username,
+        display_name: tweet.name,
+    } as AuthorData;
+
+    return {
+        author: author_data,
+        tweet: tweet_data
+    }
 }
 
 export async function get_user_profile(username : string) : Promise<Profile>
