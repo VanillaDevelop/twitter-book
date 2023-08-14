@@ -47,6 +47,13 @@ export interface TweetType
     urls?: URLResolve[];
 }
 
+export interface AuthorData
+{
+    id: string;
+    display_name: string;
+    handle: string;
+}
+
 export interface PopUpType
 {
     title: string;

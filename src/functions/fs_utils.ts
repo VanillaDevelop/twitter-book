@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { DataProfileContextType, DataProfileType, MediaType, QRTData, TweetMediaType, TweetType, URLResolve } from "@/types";
+import { AuthorData, DataProfileContextType, DataProfileType, MediaType, QRTData, TweetMediaType, TweetType, URLResolve } from "@/types";
 import path from "path";
 import {APP_DATA_PATH} from "@/contexts/DataProfileContext";
 import { ipcRenderer } from "electron";
@@ -156,8 +156,8 @@ export function indexTweetsFromProfile(uuid: string) : void
         }
 
         //quote retweet has a url entity at the end that links to a tweet (I think, I don't really know how else to tell)
-        const tweet_url_regex = /https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/[0-9]+/;
-        const tweet_url_shortened_regex = /https:\/\/t.co\/[a-zA-Z0-9]+$/; //only detects shortened URLs at the end of the tweet
+        const tweet_url_regex = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/[0-9]+/;
+        const tweet_url_shortened_regex = /https?:\/\/t.co\/[a-zA-Z0-9]+$/; //only detects shortened URLs at the end of the tweet
         
         if(tweet_url_shortened_regex.test(tweetObj.tweet.full_text) && urls)
         {
@@ -171,7 +171,7 @@ export function indexTweetsFromProfile(uuid: string) : void
                 if(tweet_url_regex.test(expanded_url))
                 {
                     //set qrt data
-                    qrt_tweet_source_id = expanded_url.match(/https:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
+                    qrt_tweet_source_id = expanded_url.match(/https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
                 }
             }
         }
@@ -250,9 +250,22 @@ export function bootstrapStructuredData(uuid: string) : void
     //copy into the structured data directory
     fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media", avatar_file!), path.join(APP_DATA_PATH, uuid, "structured_data", "avatar.jpg"));
     fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "data", "profile_media", banner_file!), path.join(APP_DATA_PATH, uuid, "structured_data", "banner.jpg"));
+    //create author subdirectory
+    fs.mkdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors"));
+    //create author data for self
+    const account_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "data", "account.js"), "utf-8");
+    const account_json = JSON.parse(account_data.substring(account_data.indexOf("{"), account_data.lastIndexOf("}") + 1));
+    const self_author = {
+        id: account_json.account.accountId,
+        display_name: account_json.account.accountDisplayName,
+        handle: account_json.account.username
+    } as AuthorData
+    fs.mkdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors", self_author.id));
+    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors", self_author.id, "author.json"), JSON.stringify(self_author));
+    fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "avatar.jpg"), path.join(APP_DATA_PATH, uuid, "structured_data", "authors", self_author.id, "avatar.jpg"));
 }
 
-export function collectQRTs(uuid: string) : void
+export async function collectQRTs(uuid: string) : Promise<Boolean>
 {
     //check if we have a file indexing QRTs
     if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json")))
@@ -268,6 +281,28 @@ export function collectQRTs(uuid: string) : void
     }
     //load the current state from the qrt_index file
     const qrt_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), "utf-8"); 
+
+    //for each QRT, check if we have the tweet, otherwise collect it
+    const qrt_index_json = JSON.parse(qrt_index_data);
+
+    qrt_index_json.qrts.forEach(async (qrt_id : string) => {
+        if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", qrt_id + ".json")))
+        {
+            //collect the tweet
+            const tweet = await getTweetById(qrt_id);
+
+            if(!tweet)
+            {
+                console.log("Failed to collect QRT with id " + qrt_id + ".")
+            }
+            else
+            {
+                console.log(tweet)
+            }
+        }
+    });
+    
+    return true;
 }
 
 export async function getTweetById(tweet_id: string) : Promise<TweetType | undefined>
