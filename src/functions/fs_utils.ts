@@ -173,6 +173,13 @@ export function indexTweetsFromProfile(uuid: string) : void
                     //set qrt data
                     qrt_tweet_source_id = expanded_url.match(/https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/)![1]
                 }
+                //remove url from urls
+                urls = urls.filter((urlObj : any) => urlObj.shortened_url !== url);
+                //set urls back to undefined if this was the only url
+                if(urls.length == 0)
+                {
+                    urls = undefined;
+                }
             }
         }
 
@@ -200,6 +207,11 @@ export function indexTweetsFromProfile(uuid: string) : void
                 } as TweetMediaType;
             });
         }
+
+        //remove any URLs from the tweet text and trim
+        tweetObj.tweet.full_text = tweetObj.tweet.full_text.replace(tweet_url_shortened_regex, "").trim();
+        //remove trailing RT @username if it exists and trim
+        tweetObj.tweet.full_text = tweetObj.tweet.full_text.replace(/RT @([a-zA-Z0-9_]+):?/, "").trim();
 
         return {
             id: tweetObj.tweet.id_str,
@@ -289,7 +301,7 @@ export async function collectQRTs(uuid: string) : Promise<Boolean>
         if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", qrt_id + ".json")))
         {
             //collect the tweet
-            const tweet = await getTweetById(qrt_id);
+            /*const tweet = await getTweetById(qrt_id);
 
             if(!tweet)
             {
@@ -298,10 +310,10 @@ export async function collectQRTs(uuid: string) : Promise<Boolean>
             else
             {
                 console.log(tweet)
-            }
+            }*/
         }
     });
-    
+
     return true;
 }
 
