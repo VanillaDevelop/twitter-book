@@ -297,31 +297,56 @@ export async function collectQRTs(uuid: string) : Promise<Boolean>
     //for each QRT, check if we have the tweet, otherwise collect it
     const qrt_index_json = JSON.parse(qrt_index_data);
 
-    qrt_index_json.qrts.forEach(async (qrt_id : string) => {
-        if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", qrt_id + ".json")))
+    return getTweets(qrt_index_json.qrts, uuid)
+}
+
+//helper function for retrieving tweets one by one and returning false as soon as an error occurs
+export async function getTweets(tweet_ids: string[], uuid: string) : Promise<boolean>
+{
+    for(const tweet_id of tweet_ids)
+    {
+        if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_id + ".json")))
+            continue;
+        
+        const data = await getTweetById(tweet_id);
+        if(data === undefined)
         {
-            //collect the tweet
-            /*const tweet = await getTweetById(qrt_id);
-
-            if(!tweet)
-            {
-                console.log("Failed to collect QRT with id " + qrt_id + ".")
-            }
-            else
-            {
-                console.log(tweet)
-            }*/
+            console.log("Failed to collect tweet with id " + tweet_id + ".")
+            return false;
         }
-    });
+        else if(data === null)
+        {
+            writeRemovedTweet(tweet_id, uuid);
+        }
+        else
+        {
+            const {author, tweet} = data;
 
+            //write tweet file
+            fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet.id + ".json"), JSON.stringify(tweet));
+
+            //check if we have the author
+            if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors", author.id)))
+            {
+                //write author file
+                fs.mkdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors", author.id));
+                fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors", author.id, "author.json"), JSON.stringify(author));
+            }
+        }
+    }
     return true;
 }
 
-export async function getTweetById(tweet_id: string) : Promise<TweetType | undefined>
+export async function writeRemovedTweet(tweet_id: string, uuid: string)
+{
+    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_id + ".json"), JSON.stringify({removed: true}));
+}
+
+export async function getTweetById(tweet_id: string) : Promise<{author: AuthorData, tweet: TweetType} | null | undefined>
 {
     return new Promise((resolve, reject) => {
-        ipcRenderer.once("tweet-return", (event, tweet : TweetType) => {
-            resolve(tweet);
+        ipcRenderer.once("tweet-return", (event, data : {author: AuthorData, tweet: TweetType} | null | undefined) => {
+            resolve(data);
         });
         ipcRenderer.send("try-get-tweet", tweet_id);
 

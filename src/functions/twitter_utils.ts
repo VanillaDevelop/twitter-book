@@ -4,13 +4,28 @@ import { ipcMain } from "electron";
 
 const scraper = new Scraper();
 
-export async function get_tweet(tweet_id: string) : Promise<{author: AuthorData, tweet: TweetType} | undefined>
+export async function get_tweet(tweet_id: string) : Promise<{author: AuthorData, tweet: TweetType} | null | undefined>
 {
-    const tweet = await scraper.getTweet(tweet_id);
+    let tweet;
+    try
+    {
+        tweet = await scraper.getTweet(tweet_id);
+    }
+    catch(e)
+    {
+        console.error(e);
+    }
+
+    if(tweet === undefined)
+    {
+        return;
+    }
+
     if(tweet === null)
     {
-        return
+        return null;
     }
+
 
     //library does not have gifs yet :( it is what it is
     let media = [] as TweetMediaType[] | undefined;
@@ -33,6 +48,7 @@ export async function get_tweet(tweet_id: string) : Promise<{author: AuthorData,
     let urls : URLResolve[] | undefined;
     if(tweet.urls.length > 0)
     {
+        urls = [];
         //we have to manually capture shortened URLs, as the library only has the long versions
         const tco_regex = /https?:\/\/t.co\/[a-zA-Z0-9]+/g;
         //capture all instances
