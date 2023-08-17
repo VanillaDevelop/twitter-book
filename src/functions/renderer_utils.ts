@@ -277,27 +277,86 @@ export function bootstrapStructuredData(uuid: string) : void
     fs.copyFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "avatar.jpg"), path.join(APP_DATA_PATH, uuid, "structured_data", "authors", self_author.id, "avatar.jpg"));
 }
 
-export async function collectQRTs(uuid: string) : Promise<Boolean>
+export async function collectQRTs(uuid: string) : Promise<number>
 {
-    //check if we have a file indexing QRTs
-    if(!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json")))
+    //we can skip this function if qrt_index file already exists and all tweets in it are stored already
+    if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json")))
     {
-        //create the file by iterating over all tweets and finding QRTs
+        const qrt_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), "utf-8"); 
+        const qrt_index_json = JSON.parse(qrt_index_data);
         const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
-        const tweets_json = tweets.map((tweet_file) => {
-            const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
-            return tweet;
-        });
-        const qrts = tweets_json.filter((tweet) => tweet.qrt_tweet_source_id).map((tweet) => tweet.qrt_tweet_source_id);
-        fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), JSON.stringify({qrts}));
+        const all_tweets_exist = qrt_index_json.qrts.every((qrt : string) => tweets.includes(qrt + ".json"));
+        if(all_tweets_exist)
+        {
+            return 0;
+        }
     }
+    //create or overwrite the file by iterating over all tweets and finding QRTs
+    const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+    const tweets_json = tweets.map((tweet_file) => {
+        const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
+        return tweet;
+    });
+    const qrts = tweets_json.filter((tweet) => tweet.qrt_tweet_source_id).map((tweet) => tweet.qrt_tweet_source_id);
+    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), JSON.stringify({qrts}));
+
     //load the current state from the qrt_index file
     const qrt_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), "utf-8"); 
 
     //for each QRT, check if we have the tweet, otherwise collect it
     const qrt_index_json = JSON.parse(qrt_index_data);
 
-    return getTweets(qrt_index_json.qrts, uuid)
+    //return the number of tweets successfully collected, or -1 if getTweets returned an error
+    const success = await getTweets(qrt_index_json.qrts, uuid);
+    if(success)
+    {
+        return qrt_index_json.qrts.length;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+export async function CollectReplyTweets(uuid: string) : Promise<number>
+{
+    //we can skip this function if reply_index file already exists and all tweets in it are stored already
+    if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json")))
+    {
+        const reply_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json"), "utf-8"); 
+        const reply_index_json = JSON.parse(reply_index_data);
+        const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+        const all_tweets_exist = reply_index_json.replies.every((reply : string) => tweets.includes(reply + ".json"));
+        if(all_tweets_exist)
+        {
+            return 0;
+        }
+    }
+    //create or overwrite the file by iterating over all tweets and finding replies
+    const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+    const tweets_json = tweets.map((tweet_file) => {
+        const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
+        return tweet;
+    });
+    const replies = tweets_json.filter((tweet) => tweet.parent_tweet_id).map((tweet) => tweet.parent_tweet_id);
+    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json"), JSON.stringify({replies}));
+
+    //load the current state from the reply_index file
+    const reply_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json"), "utf-8"); 
+
+    //for each reply, check if we have the tweet, otherwise collect it
+    const reply_index_json = JSON.parse(reply_index_data);
+
+    //return the number of tweets successfully collected, or -1 if getTweets returned an error
+    const success = await getTweets(reply_index_json.replies, uuid);
+    if(success)
+    {
+        return reply_index_json.replies.length;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 //helper function for retrieving tweets one by one and returning false as soon as an error occurs
@@ -337,6 +396,16 @@ export async function getTweets(tweet_ids: string[], uuid: string) : Promise<boo
     return true;
 }
 
+export function loadAllUserTweets(uuid: string) : TweetType[]
+{
+    const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+    const tweets_json = tweets.map((tweet_file) => {
+        const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
+        return tweet;
+    });
+    return tweets_json.sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
+}
+
 export async function writeRemovedTweet(tweet_id: string, uuid: string)
 {
     fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_id + ".json"), JSON.stringify({removed: true}));
@@ -356,4 +425,3 @@ export async function getTweetById(tweet_id: string) : Promise<{author: AuthorDa
         , 5000);
     })
 }
-

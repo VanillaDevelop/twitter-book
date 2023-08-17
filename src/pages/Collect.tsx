@@ -13,7 +13,7 @@ export default function Collect()
             <div className="fullScreen center-flex-column">
                 <button className="backButton" onClick={() => navigate("/")}/>
                 <h1 className="text-center">Your Data Profiles</h1>
-                <ProfileWheel profiles={dataProfiles} />
+                <ProfileWheel profiles={dataProfiles} collectPage={true}/>
             </div>
     )
 }

@@ -1,8 +1,9 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import { update } from './update'
-import "../../src/functions/twitter_utils.ts"
+import path from 'path'
+import "../../src/functions/main_utils"
 
 // The built directory structure
 //
@@ -43,6 +44,12 @@ const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 
 async function createWindow() {
+  protocol.interceptFileProtocol('app', function(req, callback) 
+  {
+    let url = req.url.substring(6)
+    callback({path: path.normalize(url)})
+  })
+
   win = new BrowserWindow({
     title: 'Main window',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
