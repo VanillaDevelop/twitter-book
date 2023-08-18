@@ -57,3 +57,8 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+html,body,#root,.App,.fullScreen,.no-overflow 
+{
+  overflow: hidden;
+}

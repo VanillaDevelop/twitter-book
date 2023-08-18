@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from "react"
 import {checkFileStructure, unpackZipFile} from "../../functions/renderer_utils"
 import { DataProfileContext } from "@/contexts/DataProfileContext"
 
-export default function NewProfileContent(props : {addPopUp: (popUpText: string) => void, collectPage: boolean})
+export default function NewProfileContent(props : {addPopUp: (popUpText: string) => void})
 {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const profileContext = useContext(DataProfileContext)
@@ -43,20 +43,15 @@ export default function NewProfileContent(props : {addPopUp: (popUpText: string)
 
     return (
         <div className="profileContentWrapper">
-            {
-                props.collectPage &&
-                <>
-                    <p className="text-center">
-                        Start a new data profile by importing your Twitter data. 
-                        To do this, request your Twitter data from your account settings,
-                        then point to the .zip file. Twitter may take 24 hours or more to 
-                        prepare your data.
-                    </p>
+            <p className="text-center">
+                Start a new data profile by importing your Twitter data. 
+                To do this, request your Twitter data from your account settings,
+                then point to the .zip file. Twitter may take 24 hours or more to 
+                prepare your data.
+            </p>
 
-                    <button className="dataActionButton" onClick={handleImportDataClick} disabled={buttonDisabled}>Import Twitter Data</button>
-                    <input ref={fileInputRef} type="file" accept=".zip" style={{display: "none"}} onChange={handleFileInputChange}/>
-                </>
-            }
+            <button className="dataActionButton" onClick={handleImportDataClick} disabled={buttonDisabled}>Import Twitter Data</button>
+            <input ref={fileInputRef} type="file" accept=".zip" style={{display: "none"}} onChange={handleFileInputChange}/>
         </div>
     )
 }

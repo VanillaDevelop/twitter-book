@@ -19,9 +19,10 @@ export default function SetupProfileContent(props : {user: DataProfileType})
             {props.user.is_setup &&
             <>
                 <div className="text-center">
-                    <p>This profile is already set up and can be turned into a book.</p>
-                    <p>To start the creation process, please open "My Books".</p>
+                    <p>This profile is set up and ready to be turned into a book.</p>
+                    <p>To start the creation process, click the button below.</p>
                 </div>
+                <button className="dataActionButton" onClick={() => navigate(`/book/${props.user?.twitter_handle}`)}>Create Book</button>
             </>
             }
         </div>

@@ -7,7 +7,7 @@ import PopUpHolder from "../PopUp/PopUpHolder"
 import {v4 as uuidv4} from "uuid"
 import SetupProfileContent from "./SetupProfileContent"
 
-export default function ProfileWheel(props: {profiles: DataProfileType[], collectPage: boolean})
+export default function ProfileWheel(props: {profiles: DataProfileType[]})
 {
     const [profileId, setProfileId] = useState(props.profiles.length > 1 ? 1 : 0)
     const [popUps, setPopUps] = useState<PopUpType[]>([]);
@@ -37,7 +37,7 @@ export default function ProfileWheel(props: {profiles: DataProfileType[], collec
         {
             return (
                 <DataProfile user={props.profiles[id]} small={id!=profileId} moving={moving} animationCallback={doneMoving}>
-                    {props.collectPage && <SetupProfileContent user={props.profiles[id]} />}
+                    <SetupProfileContent user={props.profiles[id]} />
                 </DataProfile>
             )
         }
@@ -45,7 +45,7 @@ export default function ProfileWheel(props: {profiles: DataProfileType[], collec
         {
             return (
             <DataProfile small={id!=profileId} moving={moving} animationCallback={doneMoving}>
-                <NewProfileContent addPopUp={addPopUp} collectPage={props.collectPage}/>
+                <NewProfileContent addPopUp={addPopUp}/>
             </DataProfile> )
         }
         else
