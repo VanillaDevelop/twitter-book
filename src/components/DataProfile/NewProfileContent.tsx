@@ -45,9 +45,8 @@ export default function NewProfileContent(props : {addPopUp: (popUpText: string)
         <div className="profileContentWrapper">
             <p className="text-center">
                 Start a new data profile by importing your Twitter data. 
-                To do this, request your Twitter data from your account settings,
-                then point to the .zip file. Twitter may take 24 hours or more to 
-                prepare your data.
+                To do this, download your Twitter data from your account settings,
+                then import the .zip file. 
             </p>
 
             <button className="dataActionButton" onClick={handleImportDataClick} disabled={buttonDisabled}>Import Twitter Data</button>

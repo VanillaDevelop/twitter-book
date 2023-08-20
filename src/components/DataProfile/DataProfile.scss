@@ -66,6 +66,10 @@
 {
     width: 100px;
     height: 100px;
+}
+
+.profileHeader .profilePicture
+{
     border-radius: 50%;
     border: 1px solid #ccc;
 }
@@ -139,4 +143,5 @@ h4
 
 .small .dataActionButton {
     font-size: 0.8em;
+    height: 25px;
 }

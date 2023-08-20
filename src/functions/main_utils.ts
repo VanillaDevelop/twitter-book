@@ -1,6 +1,6 @@
 import { AuthorData, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import { Profile, Scraper } from "@the-convocation/twitter-scraper";
-import { ipcMain } from "electron";
+import { ipcMain, shell } from "electron";
 
 const scraper = new Scraper();
 
@@ -97,3 +97,7 @@ ipcMain.on("try-get-tweet", async (event, tweet_id) => {
   const tweet = await get_tweet(tweet_id);
   event.reply('tweet-return', tweet);
 });
+
+ipcMain.on('open-external-link', (event, url) => {
+    shell.openExternal(url);
+  });
