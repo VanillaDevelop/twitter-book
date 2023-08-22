@@ -1,7 +1,7 @@
 import ProfileWheel from "@/components/DataProfile/ProfileWheel";
 import { useContext } from "react";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import Attributions from "@/components/Attributions/Attributions";
+import Attributions from "@/components/Modals/Attributions/Attributions";
 
 export default function Home()
 {

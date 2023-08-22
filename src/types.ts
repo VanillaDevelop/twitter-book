@@ -60,3 +60,9 @@ export interface PopUpType
     text: string;
     id: string;
 }
+
+export enum ModalFooterType
+{
+    None,
+    Confirm
+}

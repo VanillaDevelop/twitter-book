@@ -8,6 +8,7 @@ export default function DataProfile(props: {user?: DataProfileType, children?: R
 {
     return (
         <div className={`profileCard ${props.small ? "small " : ""}${props.moving}`} onAnimationEnd={props.animationCallback}>
+            <span className="deleteProfileButton"><img src="images/trash-solid.svg" /></span>
             <div className="profileHeader">
                 {!props.user && <img src="images/newuser.png" alt="profile" />}
                 {props.user && !props.user.is_setup && <img src="images/unknownuser.png" alt="profile" />}

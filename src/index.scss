@@ -34,16 +34,15 @@ body {
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  border: none;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background-color: rgb(255, 255, 255);
   -webkit-mask: url("images/circle-left-solid.svg") no-repeat center;
-  mask: url("images/circle-left-solid.svg") no-repeat cen
+  mask: url("images/circle-left-solid.svg") no-repeat center;
 }
 
 .w60c
