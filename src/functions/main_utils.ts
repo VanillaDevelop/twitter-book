@@ -1,6 +1,10 @@
 import { AuthorData, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import { Profile, Scraper } from "@the-convocation/twitter-scraper";
 import { ipcMain, shell } from "electron";
+import url from "url";
+import http from "http";
+import https from "https";
+import fs from "fs";
 
 const scraper = new Scraper();
 

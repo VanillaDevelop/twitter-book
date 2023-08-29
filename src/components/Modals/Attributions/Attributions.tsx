@@ -1,15 +1,11 @@
 import "./Attributions.scss"
-import { ipcRenderer } from "electron";
-import useModal from "../useModal";
+import useModal from "../../../hooks/useModal";
 import { ModalFooterType } from "@/types";
+import ExternalLink from "@/components/ExternalLink/ExternalLink";
 
 export default function Attributions()
 {
-    const openLink = (url: string) => {
-        ipcRenderer.send('open-external-link', url);
-    }
-
-    const {Modal, showModal, hideModal} = useModal(ModalFooterType.None)
+    const {Modal, showModal, hideModal} = useModal(ModalFooterType.None, "Attributions")
 
     return (
         <>
@@ -18,23 +14,23 @@ export default function Attributions()
             </div>
             <Modal>
                 <p>
-                    The Twitter Book Generator is developed by <span className="externalLink" onClick={() => openLink("https://github.com/VanillaDevelop")}>Vanilla</span>.
-                    Thanks to <span className="externalLink" onClick={() => openLink("https://github.com/karashiiro")}>Kara</span> on GitHub for fast response times on issues with the 
+                    The Twitter Book Generator is developed by <ExternalLink url="https://github.com/VanillaDevelop">Vanilla</ExternalLink>.
+                    Thanks to <ExternalLink url="https://github.com/karashiiro">Kara</ExternalLink> on GitHub for fast response times on issues with the 
                     Twitter Scraper library even though Elon Musk is continuously breaking everything. We are not affiliated with Twitter or X or any other Elon Musk (ad)venture.
                 </p>
 
                 The following external assets were used:
                 <ul>
                     <li>
-                        <span className="externalLink" onClick={() => openLink("https://icons8.com/icon/8953/add-user-male")}>Add User Male</span> icon by&nbsp;
-                        <span className="externalLink" onClick={() => openLink("https://icons8.com")}>Icons8</span>
+                        <ExternalLink url="https://icons8.com/icon/8953/add-user-male">Add User Male</ExternalLink> icon by&nbsp;
+                        <ExternalLink url="https://icons8.com">Icons8</ExternalLink>
                     </li>
                     <li>
-                        <span className="externalLink" onClick={() => openLink("hhttps://icons8.com/icon/7744/decision")}>Decision (Unknown User)</span> icon by&nbsp;
-                        <span className="externalLink" onClick={() => openLink("https://icons8.com")}>Icons8</span>
+                        <ExternalLink url="https://icons8.com/icon/7744/decision">Decision (Unknown User)</ExternalLink> icon by&nbsp;
+                        <ExternalLink url="https://icons8.com">Icons8</ExternalLink>
                     </li>
                     <li>
-                        Other icons from <span className="externalLink" onClick={() => openLink("https://fontawesome.com")}>FontAwesome</span> contain embedded attribution.
+                        Other icons from <ExternalLink url="https://fontawesome.com">FontAwesome</ExternalLink> (free icons) contain embedded attribution.
                     </li>
                 </ul>
             </Modal>

@@ -279,18 +279,6 @@ export function bootstrapStructuredData(uuid: string) : void
 
 export async function collectQRTs(uuid: string) : Promise<number>
 {
-    //we can skip this function if qrt_index file already exists and all tweets in it are stored already
-    if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json")))
-    {
-        const qrt_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "qrt_index.json"), "utf-8"); 
-        const qrt_index_json = JSON.parse(qrt_index_data);
-        const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
-        const all_tweets_exist = qrt_index_json.qrts.every((qrt : string) => tweets.includes(qrt + ".json"));
-        if(all_tweets_exist)
-        {
-            return 0;
-        }
-    }
     //create or overwrite the file by iterating over all tweets and finding QRTs
     const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
     const tweets_json = tweets.map((tweet_file) => {
@@ -306,11 +294,20 @@ export async function collectQRTs(uuid: string) : Promise<number>
     //for each QRT, check if we have the tweet, otherwise collect it
     const qrt_index_json = JSON.parse(qrt_index_data);
 
-    //return the number of tweets successfully collected, or -1 if getTweets returned an error
+    //check the number of tweets we already have
+    const tweets_count = qrt_index_json.qrts.filter((tweet_id : string) => fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_id + ".json"))).length;
+
+    //if the number of tweets is equal to the number of QRTs, we are done
+    if(tweets_count == qrt_index_json.qrts.length)
+    {
+        return 0;
+    }
+
+    //return the number of new tweets successfully collected, or -1 if getTweets returned an error
     const success = await getTweets(qrt_index_json.qrts, uuid);
     if(success)
     {
-        return qrt_index_json.qrts.length;
+        return tweets_count;
     }
     else
     {
@@ -320,19 +317,7 @@ export async function collectQRTs(uuid: string) : Promise<number>
 
 export async function CollectReplyTweets(uuid: string) : Promise<number>
 {
-    //we can skip this function if reply_index file already exists and all tweets in it are stored already
-    if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json")))
-    {
-        const reply_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json"), "utf-8"); 
-        const reply_index_json = JSON.parse(reply_index_data);
-        const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
-        const all_tweets_exist = reply_index_json.replies.every((reply : string) => tweets.includes(reply + ".json"));
-        if(all_tweets_exist)
-        {
-            return 0;
-        }
-    }
-    //create or overwrite the file by iterating over all tweets and finding replies
+    //create or overwrite the file by iterating over all current tweets and finding replies
     const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
     const tweets_json = tweets.map((tweet_file) => {
         const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
@@ -343,19 +328,67 @@ export async function CollectReplyTweets(uuid: string) : Promise<number>
 
     //load the current state from the reply_index file
     const reply_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "reply_index.json"), "utf-8"); 
-
     //for each reply, check if we have the tweet, otherwise collect it
     const reply_index_json = JSON.parse(reply_index_data);
+
+    //check the number of tweets we already have
+    const tweets_count = reply_index_json.replies.filter((tweet_id : string) => fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_id + ".json"))).length;
+
+    //if the number of tweets is equal to the number of QRTs, we are done
+    if(tweets_count == reply_index_json.replies.length)
+    {
+        return 0;
+    }
 
     //return the number of tweets successfully collected, or -1 if getTweets returned an error
     const success = await getTweets(reply_index_json.replies, uuid);
     if(success)
     {
-        return reply_index_json.replies.length;
+        return tweets_count;
     }
     else
     {
         return -1;
+    }
+}
+
+
+export async function collectMedia(uuid: string) : Promise<number>
+{
+    const folder = path.join(APP_DATA_PATH, uuid, "structured_data", "media");
+    //create path if it doesn't exist
+    if (!fs.existsSync(folder))
+        fs.mkdirSync(folder);
+    //create index of media files if it doesn't exist
+    if (!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media_index.json")))
+    {
+        const tweets = fs.readdirSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets"));
+        const tweets_json = tweets.map((tweet_file) => {
+            const tweet = JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets", tweet_file), "utf-8")) as TweetType;
+            return tweet;
+        });
+        const media = tweets_json.filter((tweet) => tweet.media).map((tweet) => tweet.media!);
+        //flatten array
+        const flattened_media = ([] as TweetMediaType[]).concat.apply([], media).map((mediaObj) => mediaObj.external_url);
+        fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media_index.json"), JSON.stringify({media: flattened_media}));
+    }
+
+    //load the media_index file
+    const media_index_data = fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media_index.json"), "utf-8"); 
+    //for each image, check if we have the image, otherwise collect it
+    const media_index_json = JSON.parse(media_index_data);
+    const media_names = media_index_json.media.reduce((acc : {[key:string]: string}, media_url : string) => {
+        acc[media_url] = media_url.substring(media_url.lastIndexOf("/") + 1);
+        return acc;
+    }, {});
+
+    //check the number of images we already have
+    const media_count = media_index_json.media.filter((media_url : string) => fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url]))).length;
+
+    //if the number of images is equal to the number of media, we are done
+    if(media_count == media_index_json.media.length)
+    {
+        return 0;
     }
 }
 
@@ -422,6 +455,6 @@ export async function getTweetById(tweet_id: string) : Promise<{author: AuthorDa
         setTimeout(() => {
             reject("Timeout while trying to get tweet with id " + tweet_id);
         }
-        , 5000);
+        , 10000);
     })
 }

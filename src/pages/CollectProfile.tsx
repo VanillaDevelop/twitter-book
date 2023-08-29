@@ -1,8 +1,10 @@
+import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
 import { CollectReplyTweets, bootstrapStructuredData, collectQRTs, indexTweetsFromProfile } from "@/functions/renderer_utils";
-import { DataProfileType } from "@/types";
+import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ExternalLink from "@/components/ExternalLink/ExternalLink";
 
 async function setUpProfile(uuid: string) : Promise<boolean>
 {
@@ -16,9 +18,11 @@ async function setUpProfile(uuid: string) : Promise<boolean>
         const newQRTs = await collectQRTs(uuid)
         if(newQRTs == -1)
             return false;
+        console.log(`Collected ${newQRTs} new QRTs`)
         const newReplies = await CollectReplyTweets(uuid)
         if(newReplies == -1)
             return false;
+        console.log(`Collected ${newReplies} new Replies`)
         if(newQRTs == 0 && newReplies == 0)
             break;
     }
@@ -37,6 +41,8 @@ export default function CollectProfile()
     const {dataProfiles} = useContext(DataProfileContext)
     const navigate = useNavigate();
 
+    const {Modal, showModal, hideModal} = useModal(ModalFooterType.None, "Warning")
+
     useEffect(() => {
         //load user into state from params
         const user = dataProfiles.find(user => user.twitter_handle === username)
@@ -50,6 +56,22 @@ export default function CollectProfile()
 
     return (
         <>
+            <Modal>
+                <p>
+                    The program encountered an error while trying to scrape your data. 
+                    If this error occurred a while after starting the scraping process, 
+                    it is likely to be caused by rate limiting. Your progress has been saved,
+                    and you may continue scraping by clicking the "Parse Tweets" button again 
+                    at a later time. You could also use a VPN to circumvent rate limiting temporarily.
+                </p>
+
+                <p>
+                    If this error occurred immediately after clicking the "Parse Tweets" button,
+                    please check your internet connection, as well as Twitter's current status.
+                    If you are still having issues, feel free to contact me on <ExternalLink url="https://github.com/VanillaDevelop/twitter-book">GitHub</ExternalLink>.
+                </p>
+            </Modal>
+
             <button className="backButton" onClick={() => navigate("/")}/>
             {user && (
                 <div>
@@ -80,7 +102,12 @@ export default function CollectProfile()
                                 Please do not close the program while this process is running, or you may have to re-import the data profile 
                                 or start from scratch.
                             </p>
-                            <button onClick={() => {setUpProfile(user!.uuid)}}>Parse Tweets</button>
+                            <button onClick={() => {setUpProfile(user!.uuid).then(success => {
+                                if(!success)
+                                {
+                                    showModal()
+                                }
+                            })}}>Parse Tweets</button>
                         </div>
                     </div>
                 </div>
