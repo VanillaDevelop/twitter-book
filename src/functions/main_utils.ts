@@ -1,22 +1,43 @@
 import { AuthorData, MediaType, TweetMediaType, TweetType, URLResolve } from "@/types";
 import { Profile, Scraper } from "@the-convocation/twitter-scraper";
-import { ipcMain, shell } from "electron";
+import { app, ipcMain, shell } from "electron";
 import url from "url";
 import http from "http";
 import https from "https";
+import path from "path";
 import fs from "fs";
 
 const scraper = new Scraper();
+const placeholder_path = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
 
-export async function get_image(file_url: string, save_path: string) : Promise<boolean>
+
+export async function get_image(file_url: string, save_path: string) : Promise<"stored" | "removed" | "error">
 {
     return new Promise((resolve, reject) => {
         const parsedUrl = url.parse(file_url);
         const httpModule = parsedUrl.protocol === 'https:' ? https : http;
 
         httpModule.get(file_url, (response) => {
-            if (response.statusCode !== 200) {
-                resolve(false);
+            if (response.statusCode === 403)
+            {
+                //403 error seems to occur when the corresponding tweet has been deleted
+                //we should really only get this when trying to get media from a direct retweet that has been deleted.
+                //In this case, we copy the placeholder image to the save_path, changing the file extension if necessary, and return "removed" 
+                const file_extension = path.extname(save_path);
+                const placeholder_copy_to = save_path.replace(file_extension, ".png");
+                fs.copyFile(placeholder_path, placeholder_copy_to, (err) => {
+                    if(err)
+                    {
+                        reject(err.message);
+                        return;
+                    }
+                });
+                resolve("removed");
+                return;
+            }
+            else if (response.statusCode !== 200) 
+            {
+                resolve("error");
                 return;
             }
 
@@ -25,7 +46,7 @@ export async function get_image(file_url: string, save_path: string) : Promise<b
 
             fileStream.on('finish', () => {
                 fileStream.close();
-                resolve(true);
+                resolve("stored");
             });
 
             fileStream.on('error', (err) => {

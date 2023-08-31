@@ -384,21 +384,30 @@ export async function collectMedia(uuid: string) : Promise<number>
         return acc;
     }, {});
 
-    //check the number of images we already have
-    const media_count = media_index_json.media.filter((media_url : string) => fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url]))).length;
+    //check files in folder
+    const media_files = fs.readdirSync(folder);
+
+    //only keep the files in media_names that don't exist in the folder (with any extension)
+    const filteredMedia = Object.keys(media_names).reduce((acc : {[key:string]: string}, media_url : string) => {
+        const without_extension = media_names[media_url].split(".")[0];
+        if (!media_files.some((media_file) => media_file.startsWith(without_extension))) {
+          acc[media_url] = media_names[media_url];
+        }
+        return acc;
+      }, {});
 
     //if the number of images is equal to the number of media, we are done
-    if(media_count == media_index_json.media.length)
+    if(Object.keys(filteredMedia).length == 0)
     {
         return 0;
     }
 
     //return the number of images successfully collected, or -1 if getImageByUrl returned an error
-    const success = await collectAllMedia(media_names, uuid);
+    const success = await collectAllMedia(filteredMedia, uuid);
 
     if(success)
     {
-        return media_count;
+        return Object.keys(filteredMedia).length;
     }
 
     return -1;
@@ -408,12 +417,9 @@ export async function collectMedia(uuid: string) : Promise<number>
 export async function collectAllMedia(media_names: {[key:string]: string}, uuid: string) : Promise<boolean>
 {
     for(const media_url in media_names)
-    {
-        if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url])))
-            continue;
-        
+    {        
         const success = await getImageByUrl(media_url, path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url]));
-        if(!success)
+        if(success === "error")
         {
             console.log("Failed to collect image with url " + media_url + ".")
             return false;
@@ -490,10 +496,10 @@ export async function getTweetById(tweet_id: string) : Promise<{author: AuthorDa
     })
 }
 
-export async function getImageByUrl(url: string, save_path: string) : Promise<boolean>
+export async function getImageByUrl(url: string, save_path: string) : Promise<"stored" | "removed" | "error">
 {
     return new Promise((resolve, reject) => {
-        ipcRenderer.once("media-return", (event, success : boolean) => {
+        ipcRenderer.once("media-return", (event, success : "stored" | "removed" | "error") => {
             resolve(success);
         });
         ipcRenderer.send("try-get-media", url, save_path);

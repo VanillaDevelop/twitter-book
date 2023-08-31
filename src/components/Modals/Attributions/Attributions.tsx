@@ -32,6 +32,9 @@ export default function Attributions()
                     <li>
                         Other icons from <ExternalLink url="https://fontawesome.com">FontAwesome</ExternalLink> (free icons) contain embedded attribution.
                     </li>
+                    <li>
+                        Placeholder media <ExternalLink url="https://commons.wikimedia.org/wiki/File:Image_not_available.png">CC BY-SA 4.0 via Wikimedia</ExternalLink> (used when media can not be scraped).
+                    </li>
                 </ul>
             </Modal>
         </>
