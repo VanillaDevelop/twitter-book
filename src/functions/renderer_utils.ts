@@ -356,9 +356,11 @@ export async function CollectReplyTweets(uuid: string) : Promise<number>
 export async function collectMedia(uuid: string) : Promise<number>
 {
     const folder = path.join(APP_DATA_PATH, uuid, "structured_data", "media");
+
     //create path if it doesn't exist
     if (!fs.existsSync(folder))
         fs.mkdirSync(folder);
+
     //create index of media files if it doesn't exist
     if (!fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media_index.json")))
     {
@@ -390,7 +392,36 @@ export async function collectMedia(uuid: string) : Promise<number>
     {
         return 0;
     }
+
+    //return the number of images successfully collected, or -1 if getImageByUrl returned an error
+    const success = await collectAllMedia(media_names, uuid);
+
+    if(success)
+    {
+        return media_count;
+    }
+
+    return -1;
 }
+
+//helper function for retrieving media one by one and returning false as soon as an error occurs
+export async function collectAllMedia(media_names: {[key:string]: string}, uuid: string) : Promise<boolean>
+{
+    for(const media_url in media_names)
+    {
+        if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url])))
+            continue;
+        
+        const success = await getImageByUrl(media_url, path.join(APP_DATA_PATH, uuid, "structured_data", "media", media_names[media_url]));
+        if(!success)
+        {
+            console.log("Failed to collect image with url " + media_url + ".")
+            return false;
+        }
+    }
+    return true;
+}
+
 
 //helper function for retrieving tweets one by one and returning false as soon as an error occurs
 export async function getTweets(tweet_ids: string[], uuid: string) : Promise<boolean>
@@ -454,6 +485,21 @@ export async function getTweetById(tweet_id: string) : Promise<{author: AuthorDa
 
         setTimeout(() => {
             reject("Timeout while trying to get tweet with id " + tweet_id);
+        }
+        , 10000);
+    })
+}
+
+export async function getImageByUrl(url: string, save_path: string) : Promise<boolean>
+{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.once("media-return", (event, success : boolean) => {
+            resolve(success);
+        });
+        ipcRenderer.send("try-get-media", url, save_path);
+
+        setTimeout(() => {
+            reject("Timeout while trying to get image from url " + url);
         }
         , 10000);
     })

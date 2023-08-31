@@ -8,6 +8,36 @@ import fs from "fs";
 
 const scraper = new Scraper();
 
+export async function get_image(file_url: string, save_path: string) : Promise<boolean>
+{
+    return new Promise((resolve, reject) => {
+        const parsedUrl = url.parse(file_url);
+        const httpModule = parsedUrl.protocol === 'https:' ? https : http;
+
+        httpModule.get(file_url, (response) => {
+            if (response.statusCode !== 200) {
+                resolve(false);
+                return;
+            }
+
+            const fileStream = fs.createWriteStream(save_path);
+            response.pipe(fileStream);
+
+            fileStream.on('finish', () => {
+                fileStream.close();
+                resolve(true);
+            });
+
+            fileStream.on('error', (err) => {
+                fs.unlink(save_path, () => {});
+                reject(err.message);
+            });
+        }).on('error', (err) => {
+            reject(err.message);
+        });
+    });
+}
+
 export async function get_tweet(tweet_id: string) : Promise<{author: AuthorData, tweet: TweetType} | null | undefined>
 {
     let tweet;
@@ -105,3 +135,8 @@ ipcMain.on("try-get-tweet", async (event, tweet_id) => {
 ipcMain.on('open-external-link', (event, url) => {
     shell.openExternal(url);
   });
+
+ipcMain.on("try-get-media", async (event, media_url, save_path) => {
+    const success = await get_image(media_url, save_path);
+    event.reply('media-return', success);
+});

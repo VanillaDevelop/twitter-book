@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { CollectReplyTweets, bootstrapStructuredData, collectQRTs, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { CollectReplyTweets, bootstrapStructuredData, collectMedia, collectQRTs, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -26,10 +26,13 @@ async function setUpProfile(uuid: string) : Promise<boolean>
         if(newQRTs == 0 && newReplies == 0)
             break;
     }
-    //fifth step: index and restructure tweet media
-    //sixth step: download missing tweet media
-    //seventh step: download other author metadata
-    //eighth step: clean up archive data
+    //fifth step: download missing tweet media
+    const newMedia = await collectMedia(uuid)
+    if(newMedia == -1)
+        return false;
+    console.log(`Collected ${newMedia} new Media Files`)
+    //sixth step: download other author metadata
+    //seventh step: clean up archive data
     return true;
 }
 
