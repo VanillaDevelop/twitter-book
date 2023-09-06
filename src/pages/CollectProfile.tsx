@@ -9,7 +9,7 @@ import ExternalLink from "@/components/ExternalLink/ExternalLink";
 async function setUpProfile(uuid: string, author_handle: string) : Promise<boolean>
 {
     //index tweets from the data profile and store a temporary list of tweets
-    indexTweetsFromProfile(uuid, author_handle)
+    await indexTweetsFromProfile(uuid, author_handle)
     
     //iteratively collect QRTs and replies to build tweet chains.
     if(!await BuildTweetChains(uuid))

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ArchiveTweetType, AuthorData, DataProfileType, TweetChainType, TweetMediaType, TweetType } from "@/types";
 import path from "path";
 import { ipcRenderer } from "electron";
-import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive } from "./general_utils";
+import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive, loadTweets } from "./general_utils";
 
 /**
  * Checks if the provided file appears to be a Twitter archive file.
@@ -85,11 +85,8 @@ export function indexTweetsFromProfile(uuid: string, author_handle: string) : vo
     if(fs.existsSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json")))
         return;
 
-    //load the user's profile name
-
-
     //load tweets from tweets.js and restructure them
-    const tweet_data = getDataFromTwitterFile(path.join(APP_DATA_PATH, uuid, "data", "tweets.json"), "[]");
+    const tweet_data = getDataFromTwitterFile(path.join(APP_DATA_PATH, uuid, "data", "tweets.js"), "[]");
     const tweets_internal = tweet_data.map(
         (tweet: ArchiveTweetType) => {
             const internal_tweet = exportTweetFromTwitterArchive(tweet, author_handle);
@@ -110,7 +107,9 @@ export function indexTweetsFromProfile(uuid: string, author_handle: string) : vo
 export async function BuildTweetChains(uuid: string) : Promise<boolean>
 {
     //Load tweets for this user
-    let tweets = getDataFromTwitterFile(path.join(APP_DATA_PATH, uuid, "data", "tweets.json"), "[]") as TweetChainType[];
+    let tweets = loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"))
+    //Sort tweet chains by the date of the first tweet - this tweet can never be null
+    tweets.sort((a, b) => (b[0]!.created_at.getTime() - a[0]!.created_at.getTime()));
     
     for(let i = 0; i < tweets.length; i++)
     {
@@ -137,6 +136,12 @@ export async function BuildTweetChains(uuid: string) : Promise<boolean>
                 //null = deleted, Tweet = successfully returned, in either case we append it to the chain
                 tweets[i].push(next_tweet);
                 last_tweet = next_tweet;
+
+                if(last_tweet !== null)
+                {
+                    //check if this tweet is the root of an older chain and delete those chains from the tweets array
+                    tweets = tweets.filter((chain) => chain[0]!.id !== last_tweet!.id);
+                }
             }
         }
     }
@@ -158,7 +163,7 @@ export async function collectMedia(uuid: string) : Promise<boolean>
     if (!fs.existsSync(folder))
         fs.mkdirSync(folder);
 
-    let tweets = getDataFromTwitterFile(path.join(APP_DATA_PATH, uuid, "data", "tweets.json"), "[]") as TweetChainType[];
+    let tweets = loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"))
 
     for (let i = 0; i < tweets.length; i++) 
     {

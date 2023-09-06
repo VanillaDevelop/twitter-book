@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import JSZip from "jszip";
-import { ArchiveTweetType, DataProfileType, MediaType, TweetMediaType, TweetType } from "../types"
+import { ArchiveTweetType, DataProfileType, MediaType, TweetChainType, TweetMediaType, TweetType } from "../types"
 import { Tweet } from "@the-convocation/twitter-scraper";
 
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
@@ -174,7 +174,7 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
 
     return {
         id: twitter_archive_tweet.tweet.id_str,
-        text: twitter_archive_tweet.tweet.full_text,
+        text: cleanTweetText(twitter_archive_tweet.tweet.full_text),
         created_at: new Date(twitter_archive_tweet.tweet.created_at),
         parent_tweet_id,
         direct_rt_author_handle,
@@ -211,7 +211,7 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetType
 
     const tweet_data = {
         id: tweet.id,
-        text: tweet.text,
+        text: cleanTweetText(tweet.text ?? ""),
         created_at: new Date(tweet.timestamp!),
         author_handle: tweet.username,
         parent_tweet_id: tweet.inReplyToStatusId,
@@ -223,4 +223,20 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetType
     } as TweetType;
 
     return tweet_data;
+}
+
+/**
+ * Helper function that implements a reviver function for JSON.parse that converts all date strings to Date objects.
+ * @param file_path The path to the file containing the tweets.
+ */
+export function loadTweets(file_path: string) : TweetChainType[]
+{
+    function reviver(key: string, value: any) {
+        if (key === "created_at" && typeof value === "string") {
+          return new Date(value);
+        }
+        return value;
+      }
+    const tweets = JSON.parse(fs.readFileSync(file_path, "utf-8"), reviver) as TweetChainType[];
+    return tweets;
 }
