@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react"
-import {checkFileStructure, unpackZipFile} from "../../functions/renderer_utils"
+import {isValidTwitterFile, tryAddProfile} from "../../functions/renderer_utils"
 import { DataProfileContext } from "@/contexts/DataProfileContext"
 
 export default function NewProfileContent(props : {addPopUp: (popUpText: string) => void})
@@ -26,16 +26,33 @@ export default function NewProfileContent(props : {addPopUp: (popUpText: string)
         const file = fileInputRef.current.files[0]
 
         // sanity check file
-        const error = await checkFileStructure(file, profileContext.dataProfiles);
-
-        if(error)
+        const {valid, value} = await isValidTwitterFile(file);
+        if(!valid)
         {
-            props.addPopUp(error)
+            props.addPopUp(value)
             setButtonDisabled(false);
             return;
         }
 
-        await unpackZipFile(file, profileContext)
+        // check if a profile with the Twitter handle already exists
+        if(profileContext.dataProfiles.find(profile => profile.twitter_handle === value))
+        {
+            props.addPopUp("A profile with this Twitter handle already exists.")
+            setButtonDisabled(false);
+            return;
+        }
+
+        const profile = await tryAddProfile(file)
+
+
+        if(profile)
+        {
+            profileContext.setDataProfiles([...profileContext.dataProfiles, profile])
+        }
+        else
+        {
+            props.addPopUp("An error occurred while creating the profile.")
+        }
 
         //re-enable button
         setButtonDisabled(false);

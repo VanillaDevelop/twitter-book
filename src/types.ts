@@ -12,27 +12,51 @@ export interface DataProfileContextType
 }
 
 export enum MediaType {
-    Photo = "PHOTO",
-    Video = "VIDEO",
-    Gif = "GIF"
+    Photo = "photo",
+    Video = "video",
+    Gif = "animated_gif"
 }
 
 export interface TweetMediaType
 {
     external_url: string;
-    type: MediaType
+    type: MediaType;
+    internal_name?: string;
 }
 
-export interface QRTData
+export interface ArchiveTweetType
 {
-    original_author_handle: string;
-    original_tweet_id: string;
-}
-
-export interface URLResolve
-{
-    shortened_url: string;
-    resolved_url: string;
+    tweet: {
+        created_at: string;
+        id_str: string;
+        entities: {
+            urls: [
+                {
+                    url: string;
+                    expanded_url: string;
+                }
+            ],
+            user_mentions: [
+                {
+                    name: string,
+                    screen_name: string
+                    id_str: string;
+                }
+            ]
+        },
+        extended_entities?: {
+            media: [
+                {
+                    media_url_https: string;
+                    type: string;
+                }
+            ]
+        },
+        full_text: string,
+        in_reply_to_status_id_str?: string,
+        in_reply_to_user_id_str?: string,
+        in_reply_to_screen_name?: string
+    }
 }
 
 export interface TweetType 
@@ -40,18 +64,23 @@ export interface TweetType
     id: string;
     text: string;
     created_at: Date;
+    author_handle: string;
     parent_tweet_id?: string;
-    direct_rt_author_id?: string;
+    direct_rt_author_handle?: string;
     qrt_tweet_source_id?: string;
-    media?: TweetMediaType[];
-    urls?: URLResolve[];
+    urls: string[];
+    media: TweetMediaType[];
 }
+
+export type TweetChainType = (TweetType | null)[];
 
 export interface AuthorData
 {
     id: string;
     display_name: string;
     handle: string;
+    profile_image_url?: string;
+    banner_url?: string;
 }
 
 export interface PopUpType

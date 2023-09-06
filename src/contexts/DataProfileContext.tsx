@@ -2,15 +2,8 @@ import { DataProfileContextType, DataProfileType } from "@/types";
 import {ReactNode, createContext, useEffect} from "react";
 import fs from "fs";
 import path from "path";
-import os from "os";
 import {useState} from "react";
-
-export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
-
-if(!fs.existsSync(APP_DATA_PATH))
-{
-    fs.mkdirSync(APP_DATA_PATH);
-}
+import { APP_DATA_PATH } from "@/functions/general_utils";
 
 export const DataProfileContext = createContext<DataProfileContextType>({ dataProfiles: [], setDataProfiles: () => {} });
 

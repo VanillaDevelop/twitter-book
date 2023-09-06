@@ -1,41 +1,28 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { CollectReplyTweets, bootstrapStructuredData, collectMedia, collectQRTs, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { BuildTweetChains, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ExternalLink from "@/components/ExternalLink/ExternalLink";
 
-async function setUpProfile(uuid: string) : Promise<boolean>
+async function setUpProfile(uuid: string, author_handle: string) : Promise<boolean>
 {
-    //first step: create structured folder and place banenr and profile picture data if it doesn't exist
-    bootstrapStructuredData(uuid)
-    //second step: index tweets from the data profile and store each tweet in a separate file
-    indexTweetsFromProfile(uuid)
-    //third+fourth step: collect QRT source tweets and reply source tweets, repeating until no new tweets are found
-    while(true)
-    {
-        const newQRTs = await collectQRTs(uuid)
-        if(newQRTs == -1)
-            return false;
-        console.log(`Collected ${newQRTs} new QRTs`)
-        const newReplies = await CollectReplyTweets(uuid)
-        if(newReplies == -1)
-            return false;
-        console.log(`Collected ${newReplies} new Replies`)
-        if(newQRTs == 0 && newReplies == 0)
-            break;
-    }
-    //fifth step: download missing tweet media
-    const newMedia = await collectMedia(uuid)
-    if(newMedia == -1)
+    //index tweets from the data profile and store a temporary list of tweets
+    indexTweetsFromProfile(uuid, author_handle)
+    
+    //iteratively collect QRTs and replies to build tweet chains.
+    if(!await BuildTweetChains(uuid))
         return false;
-    console.log(`Collected ${newMedia} new Media Files`)
+
+    //fifth step: download missing tweet media
+    if(!await collectMedia(uuid))
+        return false;
+
     //sixth step: download other author metadata
     //seventh step: clean up archive data
     return true;
 }
-
 
 export default function CollectProfile()
 {
@@ -105,7 +92,7 @@ export default function CollectProfile()
                                 Please do not close the program while this process is running, or you may have to re-import the data profile 
                                 or start from scratch.
                             </p>
-                            <button onClick={() => {setUpProfile(user!.uuid).then(success => {
+                            <button onClick={() => {setUpProfile(user!.uuid, user!.twitter_handle).then(success => {
                                 if(!success)
                                 {
                                     showModal()

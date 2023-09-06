@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import "./DataProfile.scss"
 import { DataProfileType } from "@/types"
-import { APP_DATA_PATH } from "@/contexts/DataProfileContext";
+import { APP_DATA_PATH } from "@/functions/general_utils"
 import path from "path";
 
 export default function DataProfile(props: {user?: DataProfileType, children?: ReactNode, small: boolean, moving: string, animationCallback: () => void})
