@@ -357,3 +357,13 @@ export async function getImageByUrl(url: string, uuid: string) : Promise<string 
         , 10000);
     })
 }
+
+/**
+ * Returns author data for the given user profile.
+ * @param uuid The UUID of the user to get author data for.
+ * @returns An array of AuthorData objects.
+ */
+export function getAuthors(uuid: string) : AuthorData[]
+{
+    return JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), "utf-8"));
+}

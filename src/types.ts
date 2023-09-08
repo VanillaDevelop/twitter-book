@@ -3,6 +3,8 @@ export interface DataProfileType
     uuid: string;
     twitter_handle: string;
     is_setup: boolean;
+    profile_image_internal?: string;
+    banner_internal?: string;
 }
 
 export interface DataProfileContextType

@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { BuildTweetChains, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { BuildTweetChains, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, getAuthors, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,9 +27,6 @@ async function setUpProfile(uuid: string, author_handle: string) : Promise<boole
     if(!await collectAuthorMedia(uuid))
         return false;
 
-    //clean up archive data
-    cleanupDirectory(uuid)
-
     return true;
 }
 
@@ -37,7 +34,7 @@ export default function CollectProfile()
 {
     const [user, setUser] = useState<DataProfileType | undefined>();
     const {username} = useParams();
-    const {dataProfiles} = useContext(DataProfileContext)
+    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)
     const navigate = useNavigate();
 
     const {Modal, showModal, hideModal} = useModal(ModalFooterType.None, "Warning")
@@ -106,6 +103,23 @@ export default function CollectProfile()
                                 if(!success)
                                 {
                                     showModal()
+                                }
+                                else
+                                {
+                                    const authors = getAuthors(user!.uuid)
+                                    const author = authors.find(author => author.handle === user!.twitter_handle)
+                                    setDataProfiles((dataProfiles.map(profile => {
+                                        if(profile.uuid === user!.uuid)
+                                        {
+                                            profile.is_setup = true
+                                            profile.banner_internal = author!.banner?.internal_name ?? undefined
+                                            profile.profile_image_internal = author!.profile_image?.internal_name ?? undefined
+                                            return profile;
+                                        }
+                                        return profile;
+                                    })))
+                                    cleanupDirectory(user!.uuid)
+                                    navigate(`/`)
                                 }
                             })}}>Parse Tweets</button>
                         </div>
