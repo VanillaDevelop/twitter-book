@@ -75,6 +75,16 @@ export async function tryAddProfile(file: File) : Promise<DataProfileType | unde
 }
 
 /**
+ * Delete the profile directory of the provided UUID. Does not remove the reference in the DataProfileContext.
+ * @param uuid The UUID of the profile to delete.
+ */
+export function deleteProfile(uuid: string) : void
+{
+    //delete the user's folder
+    fs.rmdirSync(path.join(APP_DATA_PATH, uuid), {recursive: true});
+}
+
+/**
  * Map the Twitter archive tweets into a more structured format.
  * @param uuid The UUID of the profile to index. The archive must have been extracted for this user.
  * @param author_handle The Twitter handle of the user to index.

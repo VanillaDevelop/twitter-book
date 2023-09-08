@@ -37,7 +37,7 @@ export default function CollectProfile()
     const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)
     const navigate = useNavigate();
 
-    const {Modal, showModal, hideModal} = useModal(ModalFooterType.None, "Warning")
+    const {Modal, showModal} = useModal(ModalFooterType.None, "Warning")
 
     useEffect(() => {
         //load user into state from params

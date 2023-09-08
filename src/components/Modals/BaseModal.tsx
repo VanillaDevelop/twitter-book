@@ -1,7 +1,8 @@
 import "./BaseModal.scss"
 import { ModalFooterType } from "@/types";
 
-export default function BaseModal(props: {children?: React.ReactNode, footer: ModalFooterType, isShown: boolean, hideModal: () => void, showModal: () => void, title?: string})
+export default function BaseModal(props: {children?: React.ReactNode, footer: ModalFooterType, isShown: boolean, hideModal: () => void, 
+                                    showModal: () => void, title?: string, callback?: (confirm: boolean) => void})
 {
     return (
         <>
@@ -15,6 +16,21 @@ export default function BaseModal(props: {children?: React.ReactNode, footer: Mo
                         {props.children}
                     </div>
                     <div className="modalFooter">
+                        {props.footer === ModalFooterType.Confirm && <>
+                                <button className="modalButton cancel" onClick={() => {
+                                    if(props.callback){
+                                        props.callback(false);
+                                    } 
+                                    props.hideModal()
+                                }}>Cancel</button>
+                                <button className="modalButton confirm" onClick={() => {
+                                    if(props.callback){
+                                        props.callback(true);
+                                    } 
+                                    props.hideModal()
+                                }}>Confirm</button>
+                            </>
+                        }
                     </div>
                 </div>
             </div>

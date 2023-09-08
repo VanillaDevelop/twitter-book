@@ -30,10 +30,10 @@ export default function Attributions()
                         <ExternalLink url="https://icons8.com">Icons8</ExternalLink>
                     </li>
                     <li>
-                        Other icons from <ExternalLink url="https://fontawesome.com">FontAwesome</ExternalLink> (free icons) contain embedded attribution.
+                        Other icons from <ExternalLink url="https://fontawesome.com">FontAwesome</ExternalLink> (free icons), embedded attribution.
                     </li>
                     <li>
-                        Placeholder media <ExternalLink url="https://commons.wikimedia.org/wiki/File:Image_not_available.png">CC BY-SA 4.0 via Wikimedia</ExternalLink> (used when media can not be scraped).
+                        Placeholder media <ExternalLink url="https://commons.wikimedia.org/wiki/File:Image_not_available.png">CC BY-SA 4.0 via Wikimedia</ExternalLink>.
                     </li>
                 </ul>
             </Modal>

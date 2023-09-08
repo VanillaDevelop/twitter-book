@@ -20,6 +20,7 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .moveModal {
@@ -59,6 +60,40 @@
 {
     padding-left: 5px;
     padding-top: 10px;
+}
+
+.modalFooter
+{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 5px;
+    height: 50px;
+}
+
+.modalButton
+{
+    background-color: rgb(24, 24, 24);
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    width: 100px;
+    margin-right: 5px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.5s;
+
+    &.confirm:hover
+    {
+        background-color: rgb(0, 68, 0);
+    }
+
+    &.cancel:hover
+    {
+        background-color: rgb(68, 0, 0);
+    }
 }
 
 @keyframes moveModal {
