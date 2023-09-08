@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { BuildTweetChains, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { BuildTweetChains, collectAuthorMedia, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,7 +23,13 @@ async function setUpProfile(uuid: string, author_handle: string) : Promise<boole
     if(!await collectAuthors(uuid))
         return false;
 
-    //seventh step: clean up archive data
+    //collect author media
+    if(!await collectAuthorMedia(uuid))
+        return false;
+
+    //clean up archive data
+
+
     return true;
 }
 
@@ -61,7 +67,8 @@ export default function CollectProfile()
                 <p>
                     If this error occurred immediately after clicking the "Parse Tweets" button,
                     please check your internet connection, as well as Twitter's current status.
-                    If you are still having issues, feel free to contact me on <ExternalLink url="https://github.com/VanillaDevelop/twitter-book">GitHub</ExternalLink>.
+                    If you are still having issues, feel free to open an issue on 
+                    <ExternalLink url="https://github.com/VanillaDevelop/twitter-book">GitHub</ExternalLink>.
                 </p>
             </Modal>
 

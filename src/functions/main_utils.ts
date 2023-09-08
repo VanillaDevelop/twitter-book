@@ -14,9 +14,9 @@ const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image
 /**
  * Get author data from the scraper library.
  * @param handle The author's handle.
- * @returns A promise that resolves to an AuthorData object if the author was found, undefined otherwise.
+ * @returns A promise that resolves to an AuthorData object if the author was found, null if an error occurred.
  */
-export async function get_profile(handle: string) : Promise<AuthorData | undefined>
+export async function get_profile(handle: string) : Promise<AuthorData | null>
 {
     try
     {
@@ -49,7 +49,7 @@ export async function get_profile(handle: string) : Promise<AuthorData | undefin
         }
         else
         {
-            return undefined;
+            return null;
         }
     }
 }
