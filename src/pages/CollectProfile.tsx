@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { BuildTweetChains, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { BuildTweetChains, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,17 +9,20 @@ import ExternalLink from "@/components/ExternalLink/ExternalLink";
 async function setUpProfile(uuid: string, author_handle: string) : Promise<boolean>
 {
     //index tweets from the data profile and store a temporary list of tweets
-    await indexTweetsFromProfile(uuid, author_handle)
+    indexTweetsFromProfile(uuid, author_handle)
     
     //iteratively collect QRTs and replies to build tweet chains.
     if(!await BuildTweetChains(uuid))
         return false;
 
-    //fifth step: download missing tweet media
+    //collect tweet media.
     if(!await collectMedia(uuid))
         return false;
 
-    //sixth step: download other author metadata
+    //collect author metadata
+    if(!await collectAuthors(uuid))
+        return false;
+
     //seventh step: clean up archive data
     return true;
 }

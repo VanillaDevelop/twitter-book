@@ -198,6 +198,45 @@ export async function collectMedia(uuid: string) : Promise<boolean>
 }
 
 /**
+ * Collect author data for all authors involved with the provided user.
+ * @param uuid The UUID of the user to collect author data for. The tweet chains must have been built for this user.
+ * @returns True if all authors were collected successfully, false if an error occurred.
+ */
+export async function collectAuthors(uuid: string) : Promise<boolean>
+{
+    const author_data_path = path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json");
+
+    //if we already have some author data, load it
+    let author_data = (fs.existsSync(author_data_path) ? JSON.parse(fs.readFileSync(author_data_path, "utf-8")) : []) as AuthorData[];
+    const tweets = loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"))
+    //Get all unique author handles from the tweets
+    const flattened_tweets = tweets.flat();
+    const author_handles = flattened_tweets.filter((tweet) => tweet !== null).map((tweet) => tweet!.author_handle)
+
+    for (let i = 0; i < author_handles.length; i++) 
+    {
+        //check if we already have data for this author
+        const author_exists = author_data.find((author) => author.handle === author_handles[i]);
+        if(author_exists) continue;
+        //otherwise get the data and append it
+        const author = await getAuthorByHandle(author_handles[i]);
+        if(!author)
+        {
+            //an error occured
+            fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), JSON.stringify(author_data));
+            return false;
+        }
+        else
+        {
+            author_data.push(author);
+        }
+    }
+
+    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), JSON.stringify(author_data));
+    return true;
+}
+
+/**
  * Make a request to the main process to get the tweet with the provided id.
  * @param tweet_id The ID of the tweet to get.
  * @returns A promise that resolves to a TweetType object if the tweet was found, null if the tweet was not found, or undefined if there was an error.
@@ -212,6 +251,26 @@ export async function getTweetById(tweet_id: string) : Promise<TweetType | null 
 
         setTimeout(() => {
             reject("Timeout while trying to get tweet with id " + tweet_id);
+        }
+        , 10000);
+    })
+}
+
+/**
+ * Make a request to the main process to get author data for the provided handle.
+ * @param handle The handle of the author to get.
+ * @returns A promise that resolves to an AuthorData object if the author was found, or undefined if there was an error.
+ */
+export async function getAuthorByHandle(handle: string) : Promise<AuthorData | undefined>
+{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.once("author-return", (event, data : (AuthorData | undefined)) => {
+            resolve(data);
+        });
+        ipcRenderer.send("try-get-author", handle);
+
+        setTimeout(() => {
+            reject("Timeout while trying to get author with handle " + handle);
         }
         , 10000);
     })

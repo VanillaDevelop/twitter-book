@@ -79,8 +79,8 @@ export interface AuthorData
     id: string;
     display_name: string;
     handle: string;
-    profile_image_url?: string;
-    banner_url?: string;
+    profile_image?: TweetMediaType;
+    banner?: TweetMediaType;
 }
 
 export interface PopUpType

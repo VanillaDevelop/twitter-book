@@ -1,4 +1,4 @@
-import { TweetType } from "@/types";
+import { AuthorData, TweetMediaType, TweetType } from "@/types";
 import { Scraper } from "@the-convocation/twitter-scraper";
 import { ipcMain, shell } from "electron";
 import http from "http";
@@ -10,6 +10,54 @@ import { app } from "electron";
 
 const scraper = new Scraper();
 const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
+
+/**
+ * Get author data from the scraper library.
+ * @param handle The author's handle.
+ * @returns A promise that resolves to an AuthorData object if the author was found, undefined otherwise.
+ */
+export async function get_profile(handle: string) : Promise<AuthorData | undefined>
+{
+    try
+    {
+        const profile = await scraper.getProfile(handle);
+
+        return {
+            id: profile.userId!,
+            display_name: profile.name!,
+            handle: handle,
+            profile_image: profile.avatar ? {
+                external_url: profile.avatar,
+                type: "photo"
+            } as TweetMediaType : undefined,
+            banner: profile.banner ? {
+                external_url: profile.banner,
+                type: "photo"
+            } as TweetMediaType : undefined
+        };
+    }
+    catch(error: any)
+    {
+        if(error.message === "rest_id not found.")
+        {
+            //This error occurs when the user was banned
+            return {
+                id: "0",
+                display_name: "Banned User",
+                handle: handle
+            }
+        }
+        else
+        {
+            return undefined;
+        }
+    }
+}
+ipcMain.on("try-get-author", async (event, handle) => {
+    const reply = await get_profile(handle);
+    event.reply('author-return', reply);
+});
+
 
 /**
  * Tries to store an image from an external URL to the local file system.
@@ -70,9 +118,9 @@ export async function get_media(web_url: string, uuid: string) : Promise<string 
         });
     });
 }
-ipcMain.on("try-get-media", async (event, media_url, save_path) => {
-    const success = await get_media(media_url, save_path);
-    event.reply('media-return', success);
+ipcMain.on("try-get-media", async (event, web_url, uuid) => {
+    const reply = await get_media(web_url, uuid);
+    event.reply('media-return', reply);
 });
 
 /**
@@ -104,8 +152,8 @@ export async function get_tweet(tweet_id: string) : Promise<TweetType | null | u
     return exportTweetFromScraper(tweet);
 }
 ipcMain.on("try-get-tweet", async (event, tweet_id) => {
-    const tweet = await get_tweet(tweet_id);
-    event.reply('tweet-return', tweet);
+    const reply = await get_tweet(tweet_id);
+    event.reply('tweet-return', reply);
 });
 
 

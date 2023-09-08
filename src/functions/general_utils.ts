@@ -176,6 +176,7 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
         id: twitter_archive_tweet.tweet.id_str,
         text: cleanTweetText(twitter_archive_tweet.tweet.full_text),
         created_at: new Date(twitter_archive_tweet.tweet.created_at),
+        author_handle: author_handle,
         parent_tweet_id,
         direct_rt_author_handle,
         qrt_tweet_source_id,
