@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { BuildTweetChains, collectAuthorMedia, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { BuildTweetChains, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,7 +28,7 @@ async function setUpProfile(uuid: string, author_handle: string) : Promise<boole
         return false;
 
     //clean up archive data
-
+    cleanupDirectory(uuid)
 
     return true;
 }

@@ -285,6 +285,18 @@ export async function collectAuthorMedia(uuid: string) : Promise<boolean>
 }
 
 /**
+ * Removes all files and folders associated with the archive. This should be the final step of the scraping process.
+ * @param uuid The UUID of the user to clean up the directory for.
+ */
+export function cleanupDirectory(uuid: string)
+{
+    const user_dir = path.join(APP_DATA_PATH, uuid);
+    fs.rmdirSync(path.join(user_dir, "assets"), {recursive: true});
+    fs.rmdirSync(path.join(user_dir, "data"), {recursive: true});
+    fs.rmSync(path.join(user_dir, "Your archive.html"));
+}
+
+/**
  * Make a request to the main process to get the tweet with the provided id.
  * @param tweet_id The ID of the tweet to get.
  * @returns A promise that resolves to a TweetType object if the tweet was found, null if the tweet was not found, or undefined if there was an error.
