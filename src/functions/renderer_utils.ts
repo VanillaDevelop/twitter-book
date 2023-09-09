@@ -320,7 +320,7 @@ export async function getTweetById(tweet_id: string) : Promise<TweetType | null 
         ipcRenderer.send("try-get-tweet", tweet_id);
 
         setTimeout(() => {
-            reject("Timeout while trying to get tweet with id " + tweet_id);
+            resolve(undefined);
         }
         , 10000);
     })
@@ -340,7 +340,7 @@ export async function getAuthorByHandle(handle: string) : Promise<AuthorData | n
         ipcRenderer.send("try-get-author", handle);
 
         setTimeout(() => {
-            reject("Timeout while trying to get author with handle " + handle);
+            resolve(null)
         }
         , 10000);
     })
@@ -362,7 +362,7 @@ export async function getImageByUrl(url: string, uuid: string) : Promise<string 
         ipcRenderer.send("try-get-media", url, uuid);
 
         setTimeout(() => {
-            reject("Timeout while trying to get image from url " + url);
+            resolve(null)
         }
         , 10000);
     })

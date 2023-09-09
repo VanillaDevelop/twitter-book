@@ -76,11 +76,12 @@ export async function get_media(web_url: string, uuid: string) : Promise<string 
 
         httpModule.get(web_url, (response) => 
         {
-            if (response.statusCode === 403)
+            if (response.statusCode === 403 || response.statusCode === 404)
             {
                 //403 error seems to occur when the corresponding tweet has been deleted
                 //we should really only get this when trying to get media from a direct retweet that has been deleted.
-                //In this case, we copy the placeholder image to the save_path and return that url
+                //404 error seems to occur in some circumstances where the URL does not directly match (but is not a general error)
+                //In these cases, we copy the placeholder image to the save_path and return that url
                 const placeholder_copy_to = path.join(media_folder, path.basename(MEDIA_PLACEHOLDER));
                 fs.copyFile(MEDIA_PLACEHOLDER, placeholder_copy_to, (err) => 
                 {

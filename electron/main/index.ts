@@ -53,7 +53,7 @@ async function createWindow() {
   win = new BrowserWindow({
     title: 'Twitter Book Generator',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
-    minHeight: 800,
+    minHeight: 900,
     minWidth: 1200,
     webPreferences: {
       preload,

@@ -84,8 +84,8 @@ export default function CollectProfile()
                 <p>
                     If this error occurred immediately after clicking the "Parse Tweets" button,
                     please check your internet connection, as well as Twitter's current status.
-                    If you are still having issues, feel free to open an issue on 
-                    <ExternalLink url="https://github.com/VanillaDevelop/twitter-book">GitHub</ExternalLink>.
+                    If you are still having issues, feel free to open an issue 
+                    on <ExternalLink url="https://github.com/VanillaDevelop/twitter-book">GitHub</ExternalLink>.
                 </p>
             </Modal>
 
