@@ -1,0 +1,36 @@
+.splitFrame
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.splitFrame__left
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border-right: 1px solid #000000;
+}
+
+.splitFrame__right
+{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 100%;
+    width: 210mm;
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+    }

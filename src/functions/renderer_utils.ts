@@ -377,3 +377,13 @@ export function getAuthors(uuid: string) : AuthorData[]
 {
     return JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), "utf-8"));
 }
+
+/**
+ * Returns tweet chains for the given user profile.
+ * @param uuid The UUID of the user to get tweet chains for.
+ * @returns An array of TweetChainType objects.
+ */
+export function getTweets(uuid: string) : TweetChainType[]
+{
+    return loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"));
+}
