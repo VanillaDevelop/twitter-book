@@ -61,9 +61,14 @@ export interface ArchiveTweetType
     }
 }
 
-export interface TweetType 
+export interface TweetItemType
 {
     id: string;
+    item: TweetType | null
+}
+
+export interface TweetType 
+{
     text: string;
     created_at: Date;
     author_handle: string;
@@ -74,7 +79,7 @@ export interface TweetType
     media: TweetMediaType[];
 }
 
-export type TweetChainType = (TweetType | null)[];
+export type TweetChainType = TweetItemType[];
 
 export interface AuthorData
 {

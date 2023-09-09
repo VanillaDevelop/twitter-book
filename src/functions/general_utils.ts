@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import JSZip from "jszip";
-import { ArchiveTweetType, DataProfileType, MediaType, TweetChainType, TweetMediaType, TweetType } from "../types"
+import { ArchiveTweetType, DataProfileType, MediaType, TweetChainType, TweetItemType, TweetMediaType, TweetType } from "../types"
 import { Tweet } from "@the-convocation/twitter-scraper";
 
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
@@ -124,9 +124,9 @@ export function createNewProfile(uuid: string, twitter_handle: string) : DataPro
  * Maps a tweet from the archive data (ArchiveTweetType) to an internal tweet object (TweetType)
  * @param twitter_archive_tweet The tweet object from the archive data.
  * @param author_handle The handle of the author of the tweet.
- * @returns A TweetType object containing the same information.
+ * @returns A TweetItemType object containing the same information.
  */
-export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTweetType, author_handle: string) : TweetType
+export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTweetType, author_handle: string) : TweetItemType
 {
     let parent_tweet_id = undefined;
     let direct_rt_author_handle = undefined;
@@ -174,23 +174,26 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
 
     return {
         id: twitter_archive_tweet.tweet.id_str,
-        text: cleanTweetText(twitter_archive_tweet.tweet.full_text),
-        created_at: new Date(twitter_archive_tweet.tweet.created_at),
-        author_handle: author_handle,
-        parent_tweet_id,
-        direct_rt_author_handle,
-        qrt_tweet_source_id,
-        media,
-        urls
-    } as TweetType;
+        item: 
+        {
+            text: cleanTweetText(twitter_archive_tweet.tweet.full_text),
+            created_at: new Date(twitter_archive_tweet.tweet.created_at),
+            author_handle: author_handle,
+            parent_tweet_id,
+            direct_rt_author_handle,
+            qrt_tweet_source_id,
+            media,
+            urls
+        } 
+    }as TweetItemType;
 }
 
 /**
  * Maps a tweet from the scraper library (Tweet) to an internal tweet object (TweetType)
  * @param tweet The tweet object from the scraper library.
- * @returns A TweetType object containing the same information.
+ * @returns A TweetItemType object containing the same information.
  */
-export function exportTweetFromScraper(tweet: Tweet) : TweetType
+export function exportTweetFromScraper(tweet: Tweet) : TweetItemType
 {
     //library does not have gifs yet, so we can only convert videos and photos
     let media = [] as TweetMediaType[];
@@ -212,16 +215,18 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetType
 
     const tweet_data = {
         id: tweet.id,
-        text: cleanTweetText(tweet.text ?? ""),
-        created_at: new Date(tweet.timestamp!),
-        author_handle: tweet.username,
-        parent_tweet_id: tweet.inReplyToStatusId,
-        qrt_tweet_source_id: tweet.quotedStatusId,
-        //retweet should not be possible (retweet of a retweet? but who cares, we can make an edge case for it)
-        direct_rt_author_handle: tweet.retweetedStatus?.username,
-        media,
-        urls
-    } as TweetType;
+        item: {
+            text: cleanTweetText(tweet.text ?? ""),
+            created_at: new Date(tweet.timestamp!),
+            author_handle: tweet.username,
+            parent_tweet_id: tweet.inReplyToStatusId,
+            qrt_tweet_source_id: tweet.quotedStatusId,
+            //retweet should not be possible (retweet of a retweet? but who cares, we can make an edge case for it)
+            direct_rt_author_handle: tweet.retweetedStatus?.username,
+            media,
+            urls
+        }
+     } as TweetItemType;
 
     return tweet_data;
 }
@@ -229,8 +234,9 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetType
 /**
  * Helper function that implements a reviver function for JSON.parse that converts all date strings to Date objects.
  * @param file_path The path to the file containing the tweets.
+ * @returns An array of collected tweets.
  */
-export function loadTweets(file_path: string) : TweetChainType[]
+export function loadTweets(file_path: string) : TweetItemType[]
 {
     function reviver(key: string, value: any) {
         if (key === "created_at" && typeof value === "string") {
@@ -238,6 +244,6 @@ export function loadTweets(file_path: string) : TweetChainType[]
         }
         return value;
       }
-    const tweets = JSON.parse(fs.readFileSync(file_path, "utf-8"), reviver) as TweetChainType[];
+    const tweets = JSON.parse(fs.readFileSync(file_path, "utf-8"), reviver)
     return tweets;
 }

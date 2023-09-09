@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { BuildTweetChains, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, getAuthors, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { CollectTweets, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, getAuthors, indexTweetsFromProfile } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -25,7 +25,7 @@ export default function CollectProfile()
         
         //iteratively collect QRTs and replies to build tweet chains.
         setParsingState(2);
-        if(!await BuildTweetChains(uuid))
+        if(!await CollectTweets(uuid))
         {
             setParsingState(0);
             return false;

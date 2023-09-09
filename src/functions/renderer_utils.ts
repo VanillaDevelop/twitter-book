@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { ArchiveTweetType, AuthorData, DataProfileType, TweetChainType, TweetMediaType, TweetType } from "@/types";
+import { ArchiveTweetType, AuthorData, DataProfileType, TweetChainType, TweetItemType, TweetMediaType, TweetType } from "@/types";
 import path from "path";
 import { ipcRenderer } from "electron";
 import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive, loadTweets } from "./general_utils";
@@ -101,7 +101,7 @@ export function indexTweetsFromProfile(uuid: string, author_handle: string) : vo
         (tweet: ArchiveTweetType) => {
             const internal_tweet = exportTweetFromTwitterArchive(tweet, author_handle);
             //turn each tweet into a standalone tweet chain
-            return [internal_tweet] as TweetChainType;
+            return internal_tweet;
         }
     )
 
@@ -110,49 +110,44 @@ export function indexTweetsFromProfile(uuid: string, author_handle: string) : vo
 }
 
 /**
- * Build tweet chains for the provided user.
+ * Collects external tweets for the provided user.
  * @param uuid The UUID of the user to scrape tweets for. The tweets must have been indexed for this user.
- * @returns True if the tweet chains were built successfully, false if an error occurred.
+ * @returns True if the tweets were successfully collected, false if an error occurred.
  */
-export async function BuildTweetChains(uuid: string) : Promise<boolean>
+export async function CollectTweets(uuid: string) : Promise<boolean>
 {
     //Load tweets for this user
     let tweets = loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"))
-    //Sort tweet chains by the date of the first tweet - this tweet can never be null
-    tweets.sort((a, b) => (b[0]!.created_at.getTime() - a[0]!.created_at.getTime()));
-    
-    for(let i = 0; i < tweets.length; i++)
-    {
-        let last_tweet = tweets[i][tweets[i].length - 1];
-        while(last_tweet !== null && (last_tweet.qrt_tweet_source_id || last_tweet.parent_tweet_id))
-        {
-            let next_tweet;
-            if(last_tweet.qrt_tweet_source_id)
-            {
-                next_tweet = await getTweetById(last_tweet.qrt_tweet_source_id);
-            }
-            else if(last_tweet.parent_tweet_id)
-            {
-                next_tweet = await getTweetById(last_tweet.parent_tweet_id);
-            }
-            if (next_tweet === undefined)
-            {
-                //an error occured
-                fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"), JSON.stringify(tweets));
-                return false;
-            }
-            else
-            {
-                //null = deleted, Tweet = successfully returned, in either case we append it to the chain
-                tweets[i].push(next_tweet);
-                last_tweet = next_tweet;
+    let tweet_count = tweets.length;
 
-                if(last_tweet !== null)
-                {
-                    //check if this tweet is the root of an older chain and delete those chains from the tweets array
-                    tweets = tweets.filter((chain) => chain[0]!.id !== last_tweet!.id);
-                }
-            }
+    for(let i = 0; i < tweet_count; i++)
+    {
+        const tweet = tweets[i].item;
+        if(tweet === null) continue;
+        if(!tweet.qrt_tweet_source_id && !tweet.parent_tweet_id) continue;
+
+        let next_tweet_id;
+        if(tweet.qrt_tweet_source_id)
+        {
+            next_tweet_id = tweet.qrt_tweet_source_id;
+        }
+        else if(tweet.parent_tweet_id)
+        {
+            next_tweet_id = tweet.parent_tweet_id;
+        }
+        if(tweets.find((tweet) => tweet.id === next_tweet_id!)) continue;
+        
+        const next_tweet = await getTweetById(next_tweet_id!);
+        if (next_tweet === null)
+        {
+            //an error occured
+            fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"), JSON.stringify(tweets));
+            return false;
+        }
+        else
+        {
+            tweets.push(next_tweet)
+            tweet_count++;
         }
     }
 
@@ -177,28 +172,25 @@ export async function collectMedia(uuid: string) : Promise<boolean>
 
     for (let i = 0; i < tweets.length; i++) 
     {
-        for (let j = 0; j < tweets[i].length; j++) 
+        let tweet = tweets[i].item;
+        if(tweet === null) continue;
+        if(!tweet.media) continue;
+        
+        for (let k = 0; k < tweet.media.length; k++) 
         {
-            let tweet = tweets[i][j];
-            if(tweet === null) continue;
-            if(!tweet.media) continue;
-            
-            for (let k = 0; k < tweet.media.length; k++) 
-            {
-                let media = tweet.media[k];
-                if(media.internal_name) continue;
+            let media = tweet.media[k];
+            if(media.internal_name) continue;
 
-                const internal_name = await getImageByUrl(media.external_url, uuid);
-                if(internal_name === null)
-                {
-                    //an error occured
-                    fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"), JSON.stringify(tweets));
-                    return false;
-                }
-                else
-                {
-                    media.internal_name = internal_name;
-                }
+            const internal_name = await getImageByUrl(media.external_url, uuid);
+            if(internal_name === null)
+            {
+                //an error occured
+                fs.writeFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"), JSON.stringify(tweets));
+                return false;
+            }
+            else
+            {
+                media.internal_name = internal_name;
             }
         }
     }
@@ -220,8 +212,7 @@ export async function collectAuthors(uuid: string) : Promise<boolean>
     let author_data = (fs.existsSync(author_data_path) ? JSON.parse(fs.readFileSync(author_data_path, "utf-8")) : []) as AuthorData[];
     const tweets = loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"))
     //Get all unique author handles from the tweets
-    const flattened_tweets = tweets.flat();
-    const author_handles = flattened_tweets.filter((tweet) => tweet !== null).map((tweet) => tweet!.author_handle)
+    const author_handles = tweets.filter((tweet) => tweet.item !== null).map((tweet) => tweet.item!.author_handle)
 
     for (let i = 0; i < author_handles.length; i++) 
     {
@@ -309,18 +300,18 @@ export function cleanupDirectory(uuid: string)
 /**
  * Make a request to the main process to get the tweet with the provided id.
  * @param tweet_id The ID of the tweet to get.
- * @returns A promise that resolves to a TweetType object if the tweet was found, null if the tweet was not found, or undefined if there was an error.
+ * @returns A promise that resolves to a TweetItemType object if the tweet was found, or null if there was an error
  */
-export async function getTweetById(tweet_id: string) : Promise<TweetType | null | undefined>
+export async function getTweetById(tweet_id: string) : Promise<TweetItemType | null>
 {
     return new Promise((resolve, reject) => {
-        ipcRenderer.once("tweet-return", (event, data : TweetType | null | undefined) => {
+        ipcRenderer.once("tweet-return", (event, data : TweetItemType | null ) => {
             resolve(data);
         });
         ipcRenderer.send("try-get-tweet", tweet_id);
 
         setTimeout(() => {
-            resolve(undefined);
+            resolve(null);
         }
         , 10000);
     })
@@ -379,11 +370,11 @@ export function getAuthors(uuid: string) : AuthorData[]
 }
 
 /**
- * Returns tweet chains for the given user profile.
- * @param uuid The UUID of the user to get tweet chains for.
- * @returns An array of TweetChainType objects.
+ * Returns tweet items for the given user profile.
+ * @param uuid The UUID of the user to get tweet items for.
+ * @returns An array of TweetItemType objects.
  */
-export function getTweets(uuid: string) : TweetChainType[]
+export function getTweets(uuid: string) : TweetItemType[]
 {
     return loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"));
 }

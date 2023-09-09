@@ -1,4 +1,4 @@
-import { AuthorData, TweetMediaType, TweetType } from "@/types";
+import { AuthorData, TweetItemType, TweetMediaType } from "@/types";
 import { Scraper } from "@the-convocation/twitter-scraper";
 import { ipcMain, shell } from "electron";
 import http from "http";
@@ -127,9 +127,9 @@ ipcMain.on("try-get-media", async (event, web_url, uuid) => {
 /**
  * Tries to get Tweet data from the scraper library.
  * @param tweet_id The ID of the tweet to get.
- * @returns A promise that resolves to a TweetType object if the tweet was found, null if the tweet was not found, or undefined if there was an error.
+ * @returns A promise that resolves to a TweetItemType object if the tweet was found, or null if there was an error.
  */
-export async function get_tweet(tweet_id: string) : Promise<TweetType | null | undefined>
+export async function get_tweet(tweet_id: string) : Promise<TweetItemType | null >
 {
     let tweet;
     try
@@ -143,11 +143,14 @@ export async function get_tweet(tweet_id: string) : Promise<TweetType | null | u
 
     if(tweet === undefined)
     {
-        return;
+        return null;
     }
     if(tweet === null)
     {
-        return null;
+        return {
+            id: tweet_id,
+            item: null
+        } as TweetItemType;
     }
 
     return exportTweetFromScraper(tweet);
