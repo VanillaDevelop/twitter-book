@@ -8,6 +8,7 @@ import { Tweet } from "@the-convocation/twitter-scraper";
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
 export const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/;
 export const SHORTENED_URL_REGEX = /https?:\/\/t.co\/[a-zA-Z0-9]+/; 
+export const RT_REGEX = /RT @([a-zA-Z0-9_]+):?/;
 
 /**
  * Parses a twitter archive data file to a Javascript object.
@@ -37,17 +38,32 @@ export function getDataFromTwitterFileString(file_string: string, enclosing: str
  * @param tweet_text The original tweet text.
  * @returns The cleaned tweet text.
  */
-export function cleanTweetText(tweet_text: string) : string
+export function cleanTweetText(tweet_text: string, urls: string[]) : {text: string, urls: string[]}
 {
     let text = tweet_text;
-    //remove any URLs from the tweet text
-    text = text.replace(SHORTENED_URL_REGEX, "")
     //remove leading RT @username if it exists and trim
-    text = text.replace(/RT @([a-zA-Z0-9_]+):?/, "")
+    text = text.replace(RT_REGEX, "")
+    //iteratively remove URLs at the end of the tweet
+    const url_end_of_tweet = new RegExp(SHORTENED_URL_REGEX.source + "$");
+    do
+    {
+        //trim whitespaces
+        text = text.trim();
+        //remove URL at the end of the tweet
+        text = text.replace(url_end_of_tweet, "");
+    }
+    while(url_end_of_tweet.test(text));
     //trim whitespaces
     text = text.trim();
+    //replace URLs in the middle of the tweet with the corresponding index in the urls array
+    let url_index = 0;
+    while(SHORTENED_URL_REGEX.test(text))
+    {
+        text = text.replace(SHORTENED_URL_REGEX, urls[url_index]);
+        url_index++;
+    }
 
-    return text;
+    return {text, urls: urls.slice(url_index, urls.length)};
 }
 
 /**
@@ -172,18 +188,20 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
         });
     }
 
+    const {text: cleaned_text, urls: cleaned_urls} = cleanTweetText(twitter_archive_tweet.tweet.full_text, urls);
+
     return {
         id: twitter_archive_tweet.tweet.id_str,
         item: 
         {
-            text: cleanTweetText(twitter_archive_tweet.tweet.full_text),
+            text: cleaned_text,
             created_at: new Date(twitter_archive_tweet.tweet.created_at),
             author_handle: author_handle,
             parent_tweet_id,
             direct_rt_author_handle,
             qrt_tweet_source_id,
             media,
-            urls
+            urls: cleaned_urls,
         } 
     }as TweetItemType;
 }
@@ -213,10 +231,11 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetItemType
 
     const urls = tweet.urls
 
+    const {text: cleaned_text, urls: cleaned_urls} = cleanTweetText(tweet.text ?? "", urls);
     const tweet_data = {
         id: tweet.id,
         item: {
-            text: cleanTweetText(tweet.text ?? ""),
+            text: cleaned_text,
             created_at: new Date(tweet.timestamp!),
             author_handle: tweet.username,
             parent_tweet_id: tweet.inReplyToStatusId,
@@ -224,7 +243,7 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetItemType
             //retweet should not be possible (retweet of a retweet? but who cares, we can make an edge case for it)
             direct_rt_author_handle: tweet.retweetedStatus?.username,
             media,
-            urls
+            urls: cleaned_urls
         }
      } as TweetItemType;
 
