@@ -1,8 +1,12 @@
 .page {
-    height: 297mm;
-    width: 210mm;
+    height: 3508px;
 }
 
 .pageContent {
-    padding: 10mm;
+    padding: 50px;
+}
+
+.preview {
+    border: 1px solid black;
+    box-sizing: border-box;
 }

@@ -61,6 +61,23 @@ export interface ArchiveTweetType
     }
 }
 
+export enum TweetRelation
+{
+    None,
+    Reply,
+    Quote,
+    RepeatChain,
+}
+
+export interface TweetRenderType
+{
+    id: string;
+    height: number;
+    rendered_item: React.ReactNode;
+    prev_relation: TweetRelation;
+}
+
+
 export interface TweetItemType
 {
     id: string;
@@ -78,8 +95,6 @@ export interface TweetType
     urls: string[];
     media: TweetMediaType[];
 }
-
-export type TweetChainType = TweetItemType[];
 
 export interface AuthorData
 {

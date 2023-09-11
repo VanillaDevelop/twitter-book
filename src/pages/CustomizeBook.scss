@@ -13,6 +13,7 @@
 
 .splitFrame__left
 {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -25,12 +26,15 @@
 
 .splitFrame__right
 {
+    width: 640px;
+    height: 25%;
     overflow-y: scroll;
     overflow-x: hidden;
     height: 100%;
-    width: 210mm;
 }
 
-::-webkit-scrollbar { 
-    display: none; 
-    }
+.previewScale
+{
+    transform: scale(0.25);
+    transform-origin: top left;
+}

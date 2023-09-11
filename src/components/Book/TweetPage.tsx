@@ -1,11 +1,14 @@
-import { TweetType } from "@/types";
+import { TweetRenderType } from "@/types";
 import "./TweetPage.scss";
-export default function TweetPage(props : {renderBorder: boolean, tweets: TweetType[]}) 
+export default function TweetPage(props : {preview: boolean, tweets: TweetRenderType[]}) 
 {
+
+    const tweets = props.tweets.map((tweet) => tweet.rendered_item);
+
     return (
-        <div className="page" style={{border: props.renderBorder ? "1px solid black" : "none"}}>
+        <div className={`page ${props.preview ? "preview" : ""}`}>
             <div className="pageContent">
-                Hullo test
+                {tweets}
             </div>
         </div>
     );
