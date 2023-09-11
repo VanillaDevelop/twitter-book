@@ -22,14 +22,9 @@ export default function CustomizeBook()
 
 
     return (
-        <div className="splitFrame">
-            <div className="splitFrame__left">
-                <h1 className="text-center">Settings for {username}</h1>
-            </div>
-            <div className="splitFrame__right">
-                <div className="previewScale">
-                    <Book tweets={tweets} authors={authors} dataProfile={dataProfile} preview={true}/>
-                </div>
+        <div className="previewFrame">
+            <div className="previewScale">
+                <Book tweets={tweets} authors={authors} dataProfile={dataProfile} preview={true}/>
             </div>
         </div>
     )

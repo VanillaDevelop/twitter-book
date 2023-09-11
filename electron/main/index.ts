@@ -54,7 +54,7 @@ async function createWindow() {
     title: 'Twitter Book Generator',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
     minHeight: 900,
-    minWidth: 1200,
+    minWidth: 1400,
     webPreferences: {
       preload,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production

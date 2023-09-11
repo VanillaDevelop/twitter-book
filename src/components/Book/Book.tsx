@@ -36,10 +36,10 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
             }
         }
         setPages(pages);
-    }, [])
+    }, [props.tweets])
 
     const page_elements = pages.map((page) => {
-        return TweetPage({preview: props.preview, tweets: page});
+        return <TweetPage preview={props.preview} tweets={page} key={page[0].id} />;
     });
 
     return (
