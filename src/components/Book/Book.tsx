@@ -132,7 +132,7 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
                 const tweet_item = ordered_tweets[i];
                 const tweet_height = await getTweetHeight(tweet_item.rendered_item);
                 tweet_item.height = tweet_height;
-                if (current_height + tweet_height < 3300)
+                if (current_height + tweet_height < 3058)
                 {
                     current_column.push(tweet_item);
                     current_height += tweet_height;
@@ -159,8 +159,8 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
         get_heights();
     }, [props.tweets])
 
-    const page_elements = pages.map((page) => {
-        return <TweetPage preview={props.preview} tweets={page} key={pages.indexOf(page)} />;
+    const page_elements = pages.map((page, index) => {
+        return <TweetPage preview={props.preview} tweets={page} page_number={index} key={index} />;
     });
 
     return (

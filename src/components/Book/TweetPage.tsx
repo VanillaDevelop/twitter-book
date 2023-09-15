@@ -1,6 +1,6 @@
 import { TweetRenderType } from "@/types";
 import "./TweetPage.scss";
-export default function TweetPage(props : {preview: boolean, tweets: TweetRenderType[][]}) 
+export default function TweetPage(props : {preview: boolean, tweets: TweetRenderType[][], page_number: number}) 
 {
 
     const first_col = props.tweets[0].map((tweet) => tweet.rendered_item);
@@ -9,7 +9,7 @@ export default function TweetPage(props : {preview: boolean, tweets: TweetRender
 
     return (
         <div className={`page ${props.preview ? "preview" : ""}`}>
-            <div className="pageContent">
+            <div className={`pageContent ${props.page_number % 2 == 0 ? 'even' : 'odd'}`}>
                 <div className="pageColumn">
                     {first_col}
                 </div>
@@ -20,6 +20,7 @@ export default function TweetPage(props : {preview: boolean, tweets: TweetRender
                     {third_col}
                 </div>
             </div>
+            <div className={`pageno ${props.page_number % 2 == 0 ? 'even' : 'odd'}`}>{props.page_number + 1}</div>
         </div>
     );
 }
