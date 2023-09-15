@@ -1,4 +1,6 @@
-export default function RemovedTweet()
+import { TweetRelation } from "@/types";
+
+export default function RemovedTweet(props: {prev_relation: TweetRelation})
 {
     return (
         <div>

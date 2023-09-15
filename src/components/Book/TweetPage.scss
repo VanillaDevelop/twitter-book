@@ -5,10 +5,18 @@
 }
 
 .pageContent {
-    padding: 50px;
+    padding: 100px 50px;
     display:flex;
     flex-direction:row;
     justify-content:space-between;
+}
+
+.pageColumn {
+    &:not(:last-child):not(:first-child) {
+        padding: 0 35px;
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+    }
 }
 
 .preview {

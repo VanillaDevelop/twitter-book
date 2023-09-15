@@ -1,10 +1,10 @@
-import { AuthorData, DataProfileType, TweetType } from "@/types";
+import { AuthorData, DataProfileType, TweetRelation, TweetType } from "@/types";
 import RemovedTweet from "./RemovedTweet";
 import "./DisplayTweet.scss"
 import { APP_DATA_PATH } from "@/functions/general_utils";
 import path from "path";
 
-export default function DisplayTweet(props: {tweet : TweetType | null, author: AuthorData, dataProfile: DataProfileType})
+export default function DisplayTweet(props: {tweet : TweetType | null, author: AuthorData, dataProfile: DataProfileType, prev_relation: TweetRelation})
 {
     if(props.tweet === null) return <RemovedTweet />
 

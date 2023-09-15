@@ -73,8 +73,7 @@ export interface TweetRenderType
 {
     id: string;
     height: number;
-    rendered_item: React.ReactNode;
-    prev_relation: TweetRelation;
+    rendered_item: JSX.Element;
 }
 
 

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import TweetPage from "./TweetPage";
 import DisplayTweet from "./DisplayTweet";
 import RemovedTweet from "./RemovedTweet";
-import { createPortal, render, unmountComponentAtNode } from "react-dom";
 import { createRoot } from "react-dom/client";
 
 export default function Book(props: {tweets: TweetItemType[], authors: AuthorData[], dataProfile: DataProfileType, preview: boolean})
@@ -36,6 +35,82 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
         });
     }
 
+    function orderTweets(tweets: TweetItemType[]): TweetRenderType[]
+    {
+        //create a dictionary that maps tweet ids to their children
+        const tweet_children = {} as {[key: string]: {tweet: string, relation: TweetRelation}[]};
+        tweets.forEach((tweet) => {
+            let parent_id, relation;
+            if(tweet.item?.qrt_tweet_source_id)
+            {
+                parent_id = tweet.item?.qrt_tweet_source_id;
+                relation = TweetRelation.Quote;
+            }
+            else if(tweet.item?.parent_tweet_id)
+            {
+                parent_id = tweet.item?.parent_tweet_id;
+                relation = TweetRelation.Reply;
+            }
+            else
+            {
+                parent_id = null;
+                relation = TweetRelation.None;
+            }
+
+            if(parent_id)
+            {
+                if(tweet_children[parent_id])
+                {
+                    tweet_children[parent_id].push({tweet: tweet.id, relation: relation});
+                }
+                else
+                {
+                    tweet_children[parent_id] = [{tweet: tweet.id, relation: relation}];
+                }
+            }
+        });
+
+        //get top level tweets, sorted by creation date
+        const top_level_tweets = tweets.filter((tweet) => tweet.item && !tweet.item.parent_tweet_id && !tweet.item.qrt_tweet_source_id).sort((a, b) => {
+            return a.item!.created_at.getTime() - b.item!.created_at.getTime();
+        });
+
+        const tweet_elements = top_level_tweets.map((tweet) => buildTweetChain(tweet, tweet_children)).flat();
+        return tweet_elements;
+    }
+
+    function buildTweetChain(tweet: TweetItemType, tweet_children: {[key: string]: {tweet: string, relation: TweetRelation}[]}, prev_relation: TweetRelation = TweetRelation.None, prev_chain?: TweetRenderType[]): TweetRenderType[]
+    {
+        const tweet_chain = prev_chain ?? [] as TweetRenderType[];
+        //add the current tweet to the chain
+        let rendered_tweet : React.ReactNode;
+        if(tweet.item === null) 
+        {
+            rendered_tweet = <RemovedTweet prev_relation={prev_relation}/>
+        }
+        else 
+        {
+            const author = props.authors.find((author) => author.handle === tweet.item!.author_handle)!;
+            rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={props.dataProfile} prev_relation={prev_relation}/>
+        }
+        tweet_chain.push({
+            id: tweet.id,
+            height: 0,
+            rendered_item: rendered_tweet,
+        } as TweetRenderType);
+
+        //add the children in a depth first manner
+        const children = tweet_children[tweet.id];
+        for (let i = 0; i < children?.length ?? 0; i++)
+        {
+            const child_tweet = props.tweets.find((tweet) => tweet.id === children[i].tweet)!;
+            const child_relation = children[i].relation;
+            buildTweetChain(child_tweet, tweet_children, child_relation, tweet_chain);
+        }
+
+        return tweet_chain;
+    }
+
     useEffect(() => 
     {
         const get_heights = async() => {
@@ -43,26 +118,17 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
             let current_page = [] as TweetRenderType[][];
             let current_column = [] as TweetRenderType[];
             let current_height = 0;
-            for (let i = 0; i < props.tweets.length; i++)
+
+            const ordered_tweets = orderTweets(props.tweets);
+
+            for (let i = 0; i < ordered_tweets.length; i++)
             {
-                const tweet_item = props.tweets[i];
-                let rendered_tweet;
-                if(tweet_item.item === null) rendered_tweet = <RemovedTweet />
-                else 
-                {
-                    const author = props.authors.find((author) => author.handle === tweet_item.item!.author_handle)!;
-                    rendered_tweet = <DisplayTweet tweet={tweet_item.item} author={author} dataProfile={props.dataProfile}/>
-                }
-                const tweet_height = await getTweetHeight(rendered_tweet);
-                const tweet_data = {
-                    id: tweet_item.id,
-                    height: tweet_height,
-                    rendered_item: rendered_tweet,
-                    prev_relation: TweetRelation.None
-                }
+                const tweet_item = ordered_tweets[i];
+                const tweet_height = await getTweetHeight(tweet_item.rendered_item);
+                tweet_item.height = tweet_height;
                 if (current_height + tweet_height < 3400)
                 {
-                    current_column.push(tweet_data);
+                    current_column.push(tweet_item);
                     current_height += tweet_height;
                 }
                 else
@@ -75,8 +141,8 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
                     }
                     current_column = [];
                     current_height = 0;
-                    current_column.push(tweet_data);
-                    current_height += tweet_data.height;
+                    current_column.push(tweet_item);
+                    current_height += tweet_item.height;
                 }
             }
             //at the end, push the last column and page
