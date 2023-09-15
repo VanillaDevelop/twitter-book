@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import JSZip from "jszip";
-import { ArchiveTweetType, DataProfileType, MediaType, TweetChainType, TweetItemType, TweetMediaType, TweetType } from "../types"
+import { ArchiveTweetType, DataProfileType, MediaType, TweetItemType, TweetMediaType } from "../types"
 import { Tweet } from "@the-convocation/twitter-scraper";
 
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
@@ -236,7 +236,7 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetItemType
         id: tweet.id,
         item: {
             text: cleaned_text,
-            created_at: new Date(tweet.timestamp!),
+            created_at: new Date(tweet.timestamp! * 1000),
             author_handle: tweet.username,
             parent_tweet_id: tweet.inReplyToStatusId,
             qrt_tweet_source_id: tweet.quotedStatusId,

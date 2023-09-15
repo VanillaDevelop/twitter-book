@@ -1,39 +1,26 @@
 import { AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType } from "@/types";
 import "./Book.scss"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TweetPage from "./TweetPage";
 import DisplayTweet from "./DisplayTweet";
 import RemovedTweet from "./RemovedTweet";
-import { createRoot } from "react-dom/client";
 
 export default function Book(props: {tweets: TweetItemType[], authors: AuthorData[], dataProfile: DataProfileType, preview: boolean})
 {
     const [pages, setPages] = useState([] as TweetRenderType[][][]);
+    const heightMeasureElem = useRef<HTMLDivElement>(null);
+    const [measureTweet, setMeasureTweet] = useState<JSX.Element | null>(null);
+    const [resolvePromise, setResolvePromise] = useState<((value: number) => void) | null>(null);
 
-    function getTweetHeight(rendered_tweet: JSX.Element): Promise<number> {
-        return new Promise((resolve) => {
-          const offDomEl = document.createElement('div');
-          document.body.appendChild(offDomEl); // Temporarily attach to the DOM
-          
-          const MeasureComponent = () => {
-            useEffect(() => {
-              const height = offDomEl.offsetHeight;
-              const computedStyle = window.getComputedStyle(offDomEl);
-              const marginTop = parseFloat(computedStyle.marginTop);
-              const marginBottom = parseFloat(computedStyle.marginBottom);
-              resolve(height + marginTop + marginBottom);
-              
-              // Cleanup
-              document.body.removeChild(offDomEl);
-            }, []);
-      
-            return rendered_tweet;
-          };
-      
-          const root = createRoot(offDomEl);
-          root.render(<MeasureComponent />);
+    // Function to measure tweet height
+    const getTweetHeight = async (rendered_tweet: JSX.Element): Promise<number> => {
+        setMeasureTweet(rendered_tweet); // Trigger a re-render to measure this tweet
+
+        // Return a Promise that resolves with the height once the DOM is updated and height is measured
+        return new Promise<number>((resolve) => {
+        setResolvePromise(() => resolve); // Store resolve function so it can be called in the useEffect
         });
-    }
+    };
 
     function orderTweets(tweets: TweetItemType[]): TweetRenderType[]
     {
@@ -107,9 +94,28 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
             const child_relation = children[i].relation;
             buildTweetChain(child_tweet, tweet_children, child_relation, tweet_chain);
         }
-
         return tweet_chain;
     }
+
+     // Measure the height whenever measureTweet changes
+    useEffect(() => {
+        //The big cheese
+        if (measureTweet && heightMeasureElem.current && resolvePromise) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const elem = heightMeasureElem.current!;
+                    const computedStyle = window.getComputedStyle(elem);
+                    const height = elem.offsetHeight;
+                    const marginTop = parseFloat(computedStyle.marginTop);
+                    const marginBottom = parseFloat(computedStyle.marginBottom);
+                    const totalHeight = height + marginTop + marginBottom;
+
+                    resolvePromise(totalHeight);  // Resolve the promise with the measured height
+                })
+            }) 
+        }
+    }, [measureTweet, resolvePromise]);
+
 
     useEffect(() => 
     {
@@ -126,7 +132,7 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
                 const tweet_item = ordered_tweets[i];
                 const tweet_height = await getTweetHeight(tweet_item.rendered_item);
                 tweet_item.height = tweet_height;
-                if (current_height + tweet_height < 3400)
+                if (current_height + tweet_height < 3300)
                 {
                     current_column.push(tweet_item);
                     current_height += tweet_height;
@@ -158,8 +164,13 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
     });
 
     return (
-        <div className="book">
-            {page_elements}
-        </div>
+        <>
+            <div className="book">
+                {page_elements}
+            </div>
+            <div className="heightMeasure" ref={heightMeasureElem}>
+                {measureTweet}
+            </div>
+        </>
     )
 }

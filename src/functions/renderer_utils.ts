@@ -1,10 +1,29 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { ArchiveTweetType, AuthorData, DataProfileType, TweetChainType, TweetItemType, TweetMediaType, TweetType } from "@/types";
+import { ArchiveTweetType, AuthorData, DataProfileType, TweetItemType } from "@/types";
 import path from "path";
 import { ipcRenderer } from "electron";
 import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive, loadTweets } from "./general_utils";
+
+/**
+ * Attempts to reset the scraper instance on the main process side.
+ * @returns True if the scraper was reset successfully, false if an error occurred.
+ */
+export async function resetScraper() : Promise<boolean>
+{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.once("scraper-reset", (event) => {
+            resolve(true);
+        });
+        ipcRenderer.send("reset-scraper");
+
+        setTimeout(() => {
+            resolve(false)
+        }
+        , 10000);
+    })
+}
 
 /**
  * Checks if the provided file appears to be a Twitter archive file.

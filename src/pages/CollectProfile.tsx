@@ -1,6 +1,6 @@
 import useModal from "@/hooks/useModal";
 import { DataProfileContext } from "@/contexts/DataProfileContext";
-import { CollectTweets, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, getAuthors, indexTweetsFromProfile } from "@/functions/renderer_utils";
+import { CollectTweets, cleanupDirectory, collectAuthorMedia, collectAuthors, collectMedia, getAuthors, indexTweetsFromProfile, resetScraper } from "@/functions/renderer_utils";
 import { DataProfileType, ModalFooterType } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,8 +19,14 @@ export default function CollectProfile()
 
     async function setUpProfile(uuid: string, author_handle: string) : Promise<boolean>
     {
-        //index tweets from the data profile and store a temporary list of tweets
         setParsingState(1);
+        //reset the scraper
+        if(!(await resetScraper()))
+        {
+            setParsingState(0);
+            return false;
+        }
+        //index tweets from the data profile and store a temporary list of tweets
         indexTweetsFromProfile(uuid, author_handle)
         
         //iteratively collect QRTs and replies to build tweet chains.

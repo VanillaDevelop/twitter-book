@@ -9,7 +9,7 @@ import Book from '@/components/Book/Book';
 export default function CustomizeBook()
 {
     const {username} = useParams();
-    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)
+    const {dataProfiles} = useContext(DataProfileContext)
     const [tweets, setTweets] = useState<TweetItemType[]>([]);
     const [authors, setAuthors] = useState<AuthorData[]>([]);
     

@@ -8,8 +8,20 @@ import fs from "fs";
 import { APP_DATA_PATH, exportTweetFromScraper } from "./general_utils";
 import { app } from "electron";
 
-const scraper = new Scraper();
+let scraper = new Scraper();
 const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
+
+/**
+ * Resets the scraper library to a new instance.
+ */
+export function reset_scraper()
+{
+    scraper = new Scraper();
+}
+ipcMain.on("reset-scraper", async (event) => {
+    reset_scraper();
+    event.reply('scraper-reset');
+});
 
 /**
  * Get author data from the scraper library.
