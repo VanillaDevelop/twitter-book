@@ -51,14 +51,33 @@
         width: 521px;
         max-height: 1200px;
         object-fit: cover;
-        border-radius: 10px;
+        border-radius: 15px;
         border: 2px solid gray;
     }
-  }
+}
+
+.tweet_media_sm
+{
+    width: 521px;
+    padding-right: 80px;
+    & > img
+    {
+        &:first-child
+        {
+            margin-top: 20px;
+        }
+        width: 521px;
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 2px solid gray;
+    }
+}
 
 .tweet_text
 {
-    max-width: 900px;
+    max-width: 521px;
+    overflow-wrap: break-word
 }
 
 .tweet_date

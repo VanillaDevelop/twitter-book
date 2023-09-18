@@ -1,5 +1,4 @@
 import { AuthorData, DataProfileType, TweetRelation, TweetType } from "@/types";
-import RemovedTweet from "./RemovedTweet";
 import "./DisplayTweet.scss"
 import { APP_DATA_PATH } from "@/functions/general_utils";
 import path from "path";
@@ -23,7 +22,7 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
                     <div className="tweet_text">
                         {props.tweet.text && <span>{props.tweet.text}</span>}
                     </div>
-                    <div className="tweet_media">
+                    <div className={`${media_elements.length > 2 ? "tweet_media_sm" : "tweet_media"}`}>
                         {media_elements}
                     </div>
                 </div>
