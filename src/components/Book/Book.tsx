@@ -58,8 +58,11 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
         });
 
         //get top level tweets, sorted by creation date
-        const top_level_tweets = tweets.filter((tweet) => tweet.item && !tweet.item.parent_tweet_id && !tweet.item.qrt_tweet_source_id).sort((a, b) => {
-            return a.item!.created_at.getTime() - b.item!.created_at.getTime();
+        const top_level_tweets = tweets.filter((tweet) => !tweet.item || (!tweet.item.parent_tweet_id && !tweet.item.qrt_tweet_source_id)).sort((a, b) => {
+            //if the tweet is null (removed), use the creation date of the first child
+            const a_time = a.item?.created_at.getTime() ?? tweets.filter((tweet) => tweet.id === tweet_children[a.id][0].tweet)[0].item!.created_at.getTime();
+            const b_time = b.item?.created_at.getTime() ?? tweets.filter((tweet) => tweet.id === tweet_children[b.id][0].tweet)[0].item!.created_at.getTime();
+            return a_time - b_time;
         });
 
         const tweet_elements = top_level_tweets.map((tweet) => buildTweetChain(tweet, tweet_children)).flat();
@@ -78,7 +81,7 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
         else 
         {
             const author = props.authors.find((author) => author.handle === tweet.item!.author_handle)!;
-            rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={props.dataProfile} prev_relation={prev_relation}/>
+            rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={props.dataProfile} standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={prev_relation}/>
         }
         tweet_chain.push({
             id: tweet.id,
