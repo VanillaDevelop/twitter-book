@@ -16,6 +16,7 @@
 
 .tweet_sidepanel
 {
+    position: relative;
     display: flex;
     flex-direction: column;
 }
@@ -46,6 +47,15 @@
     height: 80px;
     border-radius: 50%;
     margin-right: 20px;
+}
+
+.tweet_relation
+{
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 .tweet_media  

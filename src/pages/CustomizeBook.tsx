@@ -12,7 +12,6 @@ export default function CustomizeBook()
     const {dataProfiles} = useContext(DataProfileContext)
     const [tweets, setTweets] = useState<TweetItemType[]>([]);
     const [authors, setAuthors] = useState<AuthorData[]>([]);
-    const [height, setHeight] = useState(0);
     
     const dataProfile = dataProfiles.find((profile) => profile.twitter_handle === username)!;
 

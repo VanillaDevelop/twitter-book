@@ -15,6 +15,8 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
             <div className="tweet_main">
                 <div className="tweet_sidepanel">
                     {profile_image && <img src={profile_image} className="profileImage"/>}
+                    {props.prev_relation === TweetRelation.Reply && <img src="images/comment-dots-solid.svg" className="tweet_relation"/>}
+                    {props.prev_relation === TweetRelation.Quote && <img src="images/quote-left-solid.svg" className="tweet_relation"/>}
                     {!props.standalone && <div className="tweet_chain"></div>}
                 </div>
                 <div className="tweet_content">
