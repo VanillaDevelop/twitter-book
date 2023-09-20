@@ -66,7 +66,7 @@ export enum TweetRelation
     None,
     Reply,
     Quote,
-    RepeatChain,
+    Retweet,
 }
 
 export interface TweetRenderType

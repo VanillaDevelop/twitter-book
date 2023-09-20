@@ -2,9 +2,10 @@ import { DataProfileContext } from '@/contexts/DataProfileContext';
 import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import "./CustomizeBook.scss"
-import { AuthorData, TweetItemType } from '@/types';
+import { AuthorData, TweetItemType, TweetRenderType } from '@/types';
 import { getAuthors, getTweets } from '@/functions/renderer_utils';
 import Book from '@/components/Book/Book';
+import BookBuilder from '@/components/Book/BookBuilder';
 
 export default function CustomizeBook()
 {
@@ -12,7 +13,12 @@ export default function CustomizeBook()
     const {dataProfiles} = useContext(DataProfileContext)
     const [tweets, setTweets] = useState<TweetItemType[]>([]);
     const [authors, setAuthors] = useState<AuthorData[]>([]);
+    const [pages, setPages] = useState<TweetRenderType[][][] | null>(null)
     
+    const updatePages = (pages: TweetRenderType[][][]) => {
+        setPages(pages);
+    }
+
     const dataProfile = dataProfiles.find((profile) => profile.twitter_handle === username)!;
 
     useEffect(() => {
@@ -21,10 +27,14 @@ export default function CustomizeBook()
     }, [])
 
     return (
-        <div className="previewFrame">
-            <div className="previewScale">
-                <Book tweets={tweets} authors={authors} dataProfile={dataProfile} preview={true}/>
-            </div>
+        <div>
+        {pages && 
+            <div className="previewFrame">
+                <div className="previewScale">
+                    <Book pages={pages} preview={true}/>
+                </div>
+            </div>}
+        {pages === null && tweets.length > 0 && <BookBuilder tweets={tweets} authors={authors} dataProfile={dataProfile} bookCallback={updatePages}/>}
         </div>
     )
 }
