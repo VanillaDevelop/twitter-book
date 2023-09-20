@@ -168,7 +168,7 @@ export default function Book(props: {tweets: TweetItemType[], authors: AuthorDat
 
     return (
         <>
-            <div className="book">
+            <div className={`book ${props.preview ? "preview" : ""}`}>
                 {page_elements}
             </div>
             <div className="heightMeasure" ref={heightMeasureElem}>

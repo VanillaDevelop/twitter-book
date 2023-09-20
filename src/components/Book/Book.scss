@@ -1,6 +1,13 @@
 .book
 {
     width: 2480px;
+    &.preview
+    {
+        //super whacky hack to make scrolling the preview work
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 245vh;
+    }
 }
 
 .heightMeasure
