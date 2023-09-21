@@ -5,7 +5,8 @@ import path from "path";
 
 export default function DisplayTweet(props: {tweet : TweetType, author: AuthorData, dataProfile: DataProfileType, standalone: boolean, prev_relation: TweetRelation})
 {
-    const profile_image = props.author.profile_image ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.author.profile_image.internal_name!) : undefined;
+    const profile_image = props.author?.profile_image ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.author.profile_image.internal_name!) 
+        : "images/unknownuser.png"
     const media_elements = props.tweet.media.map((media) => {
         return <img src={"app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", media.internal_name!)} key={media.internal_name} className="tweetMedia"/>
     });
@@ -17,11 +18,12 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
                     {profile_image && <img src={profile_image} className="profileImage"/>}
                     {props.prev_relation === TweetRelation.Reply && <img src="images/comment-dots-solid.svg" className="tweet_relation"/>}
                     {props.prev_relation === TweetRelation.Quote && <img src="images/quote-left-solid.svg" className="tweet_relation"/>}
+                    {props.prev_relation === TweetRelation.Retweet && <img src="images/retweet-solid.svg" className="tweet_relation"/>}
                     {!props.standalone && <div className="tweet_chain"></div>}
                 </div>
                 <div className="tweet_content">
                     <div className="tweet_date">{props.tweet.created_at.toLocaleString()}</div>
-                    <div className="tweet_author">{props.author.display_name} (@{props.author.handle})</div>
+                    <div className="tweet_author">{props.author?.display_name ?? "Unknown"} {props.author && <>(@{props.author.handle})</>}</div>
                     <div className="tweet_text">
                         {props.tweet.text && <span>{props.tweet.text}</span>}
                     </div>

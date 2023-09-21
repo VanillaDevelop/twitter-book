@@ -28,7 +28,8 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     }
     else 
     {
-        const author = authors.find((author) => author.handle === tweet.item!.author_handle)!;
+        const author_handle = tweet.item!.direct_rt_author_handle ?? tweet.item!.author_handle
+        const author = authors.find((author) => author.handle === author_handle)!;
         rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={prev_relation}/>
     }
     tweet_chain.push({
@@ -182,7 +183,9 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
             <div className="heightMeasure" ref={heightMeasureElem}>
                 {measureTweet}
             </div>
-            <div className="progress">
+            <div className="progress_section">
+                <h1> Building your tweets </h1>
+                <h3> This may take a while, please wait... </h3>
                 <progress value={progress} max={props.tweets.length}></progress>
             </div>
         </>
