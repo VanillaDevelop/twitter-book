@@ -27,7 +27,7 @@ export default function CustomizeBook()
     }, [])
 
     return (
-        <div>
+        <div className="h-100">
         {pages && 
             <div className="previewFrame">
                 <div className="previewScale">

@@ -29,8 +29,9 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     else 
     {
         const author_handle = tweet.item!.direct_rt_author_handle ?? tweet.item!.author_handle
+        const relation = tweet.item?.direct_rt_author_handle ? TweetRelation.Retweet : prev_relation
         const author = authors.find((author) => author.handle === author_handle)!;
-        rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={prev_relation}/>
+        rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={relation}/>
     }
     tweet_chain.push({
         id: tweet.id,
@@ -72,11 +73,6 @@ function buildOrderedTweets(tweets: TweetItemType[], authors: AuthorData[], data
                 parent_id = tweet.item?.parent_tweet_id;
                 relation = TweetRelation.Reply;
             }
-            else if(tweet.item?.direct_rt_author_handle)
-            {
-                parent_id = null;
-                relation = TweetRelation.Retweet
-            }
             else
             {
                 parent_id = null;
@@ -106,6 +102,7 @@ function buildOrderedTweets(tweets: TweetItemType[], authors: AuthorData[], data
 
         //Build all tweet chains and flatten them into a single list
         const tweet_elements = top_level_tweets.map((tweet) => buildTweetChain(tweet, tweets, tweet_children, authors, dataProfile)).flat();
+
         return tweet_elements;
     }
 
@@ -115,6 +112,7 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
     const heightMeasureElem = useRef<HTMLDivElement>(null);
     const [measureTweet, setMeasureTweet] = useState<JSX.Element | null>(null);
     const [progress, setProgress] = useState(0);
+    const [tweetCount, setTweetCount] = useState(100);
 
     // Function to measure tweet height
     const getTweetHeight = async (rendered_tweet: JSX.Element): Promise<number> => {
@@ -143,6 +141,7 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
             let current_height = 0;
 
             const ordered_tweets = buildOrderedTweets(props.tweets, props.authors, props.dataProfile);
+            setTweetCount(ordered_tweets.length);
 
             for (let i = 0; i < ordered_tweets.length; i++)
             {
@@ -167,7 +166,7 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
                     current_column.push(tweet_item);
                     current_height += tweet_item.height;
                 }
-                setProgress((oldProgress) => oldProgress + 1);
+                setProgress(i+1);
             }
             //at the end, push the last column and page
             current_page.push(current_column);
@@ -184,9 +183,9 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
                 {measureTweet}
             </div>
             <div className="progress_section">
-                <h1> Building your tweets </h1>
+                <h1> Building Your Tweets </h1>
                 <h3> This may take a while, please wait... </h3>
-                <progress value={progress} max={props.tweets.length}></progress>
+                <progress value={progress / tweetCount}></progress>
             </div>
         </>
     )
