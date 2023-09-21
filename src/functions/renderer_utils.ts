@@ -397,3 +397,23 @@ export function getTweets(uuid: string) : TweetItemType[]
 {
     return loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"));
 }
+
+/**
+ * Formats tweet text for display in the app.
+ * @param text The text to format.
+ */
+export function formatText(text: string) : string
+{
+    // replace newlines with <br/> and replace html entities
+    let tweet_text_formatted = text.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&").replace(/\n/g, "<br/>");
+    
+    // replace links with <a> tags
+    tweet_text_formatted = tweet_text_formatted.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="url" target="_blank">$1</a>');
+    
+    // replace mentions with custom <div class="mention"> tags, but avoid mentions within URLs
+    tweet_text_formatted = tweet_text_formatted.replace(/(?<!<a href="[^"]*)@([^\s]+)/g, '<a class="mention" href="https://twitter.com/$1" target="_blank">@$1</a>');
+    // replace hashtags with custom <div class="hashtag"> tags, but avoid hashtags within URLs
+    tweet_text_formatted = tweet_text_formatted.replace(/(?<!<a href="[^"]*)#([^\s]+)/g, '<div class="hashtag">#$1</div>');
+    
+    return tweet_text_formatted;
+}
