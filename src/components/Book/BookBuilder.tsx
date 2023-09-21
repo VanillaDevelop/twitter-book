@@ -31,7 +31,8 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
         const author_handle = tweet.item!.direct_rt_author_handle ?? tweet.item!.author_handle
         const relation = tweet.item?.direct_rt_author_handle ? TweetRelation.Retweet : prev_relation
         const author = authors.find((author) => author.handle === author_handle)!;
-        rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={relation}/>
+        rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} 
+                            standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={relation} />
     }
     tweet_chain.push({
         id: tweet.id,
@@ -41,6 +42,12 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
 
     //add the children in a depth first manner
     const children = tweet_children[tweet.id];
+    //sorted by creation date, oldest first
+    children?.sort((a, b) => {
+        const a_time = tweets.find((tweet) => tweet.id === a.tweet)?.item?.created_at.getTime() ?? 0;
+        const b_time = tweets.find((tweet) => tweet.id === b.tweet)?.item?.created_at.getTime() ?? 0;
+        return a_time - b_time;
+    });
     for (let i = 0; i < children?.length ?? 0; i++)
     {
         const child_tweet = tweets.find((tweet) => tweet.id === children[i].tweet)!;
