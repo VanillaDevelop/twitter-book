@@ -1,4 +1,4 @@
-import { AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType } from "@/types";
+import { AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType, TweetRole } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import DisplayTweet from "./DisplayTweet";
 import RemovedTweet from "./RemovedTweet";
@@ -17,9 +17,13 @@ import "./BookBuilder.scss"
  */
 function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_children: {[key: string]: {tweet: string, relation: TweetRelation}[]}, 
                         authors: AuthorData[], dataProfile: DataProfileType, prev_relation: TweetRelation = TweetRelation.None,
-                        prev_chain?: TweetRenderType[]): TweetRenderType[]
+                        prev_chain?: TweetRenderType[], has_siblings: boolean = false): TweetRenderType[]
 {
     const tweet_chain = prev_chain ?? [] as TweetRenderType[];
+    //get children and determine the tweet type
+    const children = tweet_children[tweet.id];
+    const has_children = children?.length ?? 0 > 0;
+    const tweet_role = !has_children && !has_siblings ? TweetRole.LastItem : has_children ? TweetRole.HasDirectResponse : TweetRole.HasSiblingResponse;
     //add the current tweet to the chain
     let rendered_tweet : React.ReactNode;
     if(tweet.item === null) 
@@ -32,7 +36,7 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
         const relation = tweet.item?.direct_rt_author_handle ? TweetRelation.Retweet : prev_relation
         const author = authors.find((author) => author.handle === author_handle)!;
         rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} 
-                            standalone={(tweet_children[tweet.id]?.length ?? 0) == 0} prev_relation={relation} />
+                            tweet_role={tweet_role} prev_relation={relation} />
     }
     tweet_chain.push({
         id: tweet.id,
@@ -41,7 +45,6 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     } as TweetRenderType);
 
     //add the children in a depth first manner
-    const children = tweet_children[tweet.id];
     //sorted by creation date, oldest first
     children?.sort((a, b) => {
         const a_time = tweets.find((tweet) => tweet.id === a.tweet)?.item?.created_at.getTime() ?? 0;
@@ -52,7 +55,7 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     {
         const child_tweet = tweets.find((tweet) => tweet.id === children[i].tweet)!;
         const child_relation = children[i].relation;
-        buildTweetChain(child_tweet, tweets, tweet_children, authors, dataProfile, child_relation, tweet_chain);
+        buildTweetChain(child_tweet, tweets, tweet_children, authors, dataProfile, child_relation, tweet_chain, has_siblings = children.length > i + 1);
     }
     return tweet_chain;
 }

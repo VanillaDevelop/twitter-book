@@ -36,6 +36,20 @@
     border-left: 3px solid #26a7de;
 }
 
+.tweet_sibling
+{
+    flex-grow: 1;
+    height: 100%;
+    margin-left: 35%;
+    margin-top: 20px;
+    border-left: 2px dashed #26a7de;
+}
+
+.last_tweet
+{
+    padding-bottom: 30px;
+}
+
 .tweet_author
 {
     font-weight: bold;

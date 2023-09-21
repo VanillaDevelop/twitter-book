@@ -69,6 +69,13 @@ export enum TweetRelation
     Retweet,
 }
 
+export enum TweetRole
+{
+    HasDirectResponse,
+    HasSiblingResponse,
+    LastItem
+}
+
 export interface TweetRenderType
 {
     id: string;
