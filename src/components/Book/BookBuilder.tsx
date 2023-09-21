@@ -55,7 +55,8 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     {
         const child_tweet = tweets.find((tweet) => tweet.id === children[i].tweet)!;
         const child_relation = children[i].relation;
-        buildTweetChain(child_tweet, tweets, tweet_children, authors, dataProfile, child_relation, tweet_chain, has_siblings = children.length > i + 1);
+        //that has_siblings logic works somehow (basically we need to propagate has_siblings through to the leaf nodes)
+        buildTweetChain(child_tweet, tweets, tweet_children, authors, dataProfile, child_relation, tweet_chain, has_siblings ? true : children.length > i + 1);
     }
     return tweet_chain;
 }
