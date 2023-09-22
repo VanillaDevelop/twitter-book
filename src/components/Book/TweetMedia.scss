@@ -1,0 +1,24 @@
+.tweet_media_element
+{
+    position: relative;
+    & > .tweet_media_item
+    {
+        &:first-child
+        {
+            margin-top: 20px;
+        }
+        width: 521px;
+        max-height: 1200px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 2px solid gray;
+    }
+}
+
+.tweet_media_overlay
+{
+    position: absolute;
+    bottom: 30px;
+    right: 20px;
+    width: 196px;
+}
