@@ -43,14 +43,14 @@ export function cleanTweetText(tweet_text: string, urls: string[]) : {text: stri
     let text = tweet_text;
     //remove leading RT @username if it exists and trim
     text = text.replace(RT_REGEX, "")
+    //trim whitespaces
+    text = text.trim();
     //iteratively remove URLs at the end of the tweet
     const url_end_of_tweet = new RegExp(SHORTENED_URL_REGEX.source + "$");
     do
     {
-        //trim whitespaces
-        text = text.trim();
         //remove URL at the end of the tweet
-        text = text.replace(url_end_of_tweet, "");
+        text = text.replace(url_end_of_tweet, "").trim();
     }
     while(url_end_of_tweet.test(text));
     //trim whitespaces
@@ -159,11 +159,14 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
     }
 
     //quote retweet has a url entity at the end that links to a tweet (I think, I don't really know how else to tell)        
-    if(urls.length > 0 && LONG_TWEET_URL_REGEX.test(urls[urls.length - 1]) && 
-        twitter_archive_tweet.tweet.full_text.endsWith(twitter_archive_tweet.tweet.entities.urls[twitter_archive_tweet.tweet.entities.urls.length - 1].url))
+    //this now also matches tweet URLs in the middle of text technically but idk who the f-ck would do that so
+    if(urls.length > 0 && LONG_TWEET_URL_REGEX.test(urls[urls.length - 1]))
     {
         const last_url = urls.pop()!
         qrt_tweet_source_id = last_url.match(LONG_TWEET_URL_REGEX)![1]
+        //remove the short url from the tweet text, otherwise whacky things happen...
+        const short_url = twitter_archive_tweet.tweet.entities.urls.find((urlObj) => urlObj.expanded_url === last_url)!.url
+        twitter_archive_tweet.tweet.full_text = twitter_archive_tweet.tweet.full_text.replace(short_url, "").trim();
     }
 
     //reply tweets will have a in_reply_to_status_id and in_reply_to_user_id_str field
