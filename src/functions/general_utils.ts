@@ -233,6 +233,14 @@ export function exportTweetFromScraper(tweet: Tweet) : TweetItemType
     })
 
     const urls = tweet.urls
+    //if tweet is a QRT, remove the QRT URL from the URL list (clean text function will remove the URL from the text)
+    if(tweet.quotedStatusId)
+    {
+        //find url that contains the QRT tweet id
+        const last_twitter_url = urls.find((url) => url.includes(tweet.quotedStatusId!))
+        //remove the url from the list
+        urls.splice(urls.indexOf(last_twitter_url!), 1);
+    }
 
     const {text: cleaned_text, urls: cleaned_urls} = cleanTweetText(tweet.text ?? "", urls);
     const tweet_data = {
