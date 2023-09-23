@@ -4,12 +4,14 @@ import { APP_DATA_PATH } from "@/functions/general_utils";
 import path from "path";
 import { formatText } from "@/functions/renderer_utils";
 import TweetMedia from "./TweetMedia";
+import ExternalLink from "../ExternalLink/ExternalLink";
 
 export default function DisplayTweet(props: {tweet : TweetType, author: AuthorData, dataProfile: DataProfileType, tweet_role: TweetRole, prev_relation: TweetRelation})
 {
     const profile_image = props.author?.profile_image ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.author.profile_image.internal_name!) 
         : "images/unknownuser.png"
     const media_elements = props.tweet.media.map((media) => <TweetMedia media={media} dataProfile={props.dataProfile}/>)
+    const urls = props.tweet.urls.map((url) => <ExternalLink url={url}>{url}</ExternalLink>)
     const tweet_text_formatted = formatText(props.tweet.text)
 
     return (
@@ -27,6 +29,10 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
                     <div className="tweet_date">{props.tweet.created_at.toLocaleString()}</div>
                     <div className="tweet_author">{props.author?.display_name ?? "Unknown"} {props.author && <>(@{props.author.handle})</>}</div>
                     <div className="tweet_text" dangerouslySetInnerHTML={{__html: tweet_text_formatted}}>
+                    </div>
+                    <div className="tweet_urls">
+                        {urls.length > 0 && <div className="tweet_urls_title">Attached URLs:</div>}
+                        {urls}
                     </div>
                     <div className={`${media_elements.length > 2 ? "tweet_media_sm" : "tweet_media"}`}>
                         {media_elements}

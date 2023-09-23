@@ -129,3 +129,16 @@
     color: #1677B8;
     text-decoration: none;
 }
+
+.tweet_urls {
+    color: gray;
+    text-decoration: none;
+    font-size: 30px;
+
+    span {
+        display: block;
+        width: 521px;
+        color: gray;
+        overflow-wrap: break-word;
+    }
+}
