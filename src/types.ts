@@ -123,3 +123,16 @@ export enum ModalFooterType
     None,
     Confirm
 }
+
+export interface CurrentBookType
+{
+    pages: TweetRenderType[][][];
+    dataProfile?: DataProfileType;
+    dateSpan: [Date, Date];
+}
+
+export interface CurrentBookContextType
+{
+    currentBook: CurrentBookType;
+    setCurrentBook: (book: CurrentBookType) => void;
+}

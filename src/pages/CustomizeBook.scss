@@ -9,3 +9,18 @@
     transform: scale(0.4);
     transform-origin: top left;
 }
+
+.printButton {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    -webkit-mask: url("images/print-solid.svg") no-repeat center;
+    mask: url("images/print-solid.svg") no-repeat center;
+  }

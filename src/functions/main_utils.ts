@@ -1,6 +1,6 @@
-import { AuthorData, TweetItemType, TweetMediaType } from "@/types";
+import { AuthorData, DataProfileType, TweetItemType, TweetMediaType, TweetRenderType } from "@/types";
 import { Scraper } from "@the-convocation/twitter-scraper";
-import { ipcMain, shell } from "electron";
+import { BrowserWindow, ipcMain, shell } from "electron";
 import http from "http";
 import https from "https";
 import path from "path";
@@ -10,6 +10,25 @@ import { app } from "electron";
 
 let scraper = new Scraper();
 const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
+
+function printBook(dataProfile: DataProfileType) 
+{
+    const win = new BrowserWindow({ show: false }); // don't show the window
+  
+    win.loadURL(`file://${__dirname}/index.html/print-book`);
+  
+    // When the content is loaded, print to PDF
+    win.webContents.on('did-finish-load', () => {
+      win.webContents.printToPDF({}).then(data => {
+        // Save the data as a PDF file
+        fs.writeFileSync(path.join(APP_DATA_PATH, dataProfile.uuid, "structured_data", "book.pdf"), data);
+        win.close();
+      });
+    });
+  }
+ipcMain.on('create-and-print', (event, dataProfile) => {
+    printBook(dataProfile);
+});
 
 /**
  * Resets the scraper library to a new instance.

@@ -1,11 +1,12 @@
 import { DataProfileContext } from '@/contexts/DataProfileContext';
 import { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import "./CustomizeBook.scss"
 import { AuthorData, TweetItemType, TweetRenderType } from '@/types';
 import { getAuthors, getTweets } from '@/functions/renderer_utils';
 import Book from '@/components/Book/Book';
 import BookBuilder from '@/components/Book/BookBuilder';
+import { ipcRenderer } from 'electron';
 
 export default function CustomizeBook()
 {
@@ -15,6 +16,11 @@ export default function CustomizeBook()
     const [authors, setAuthors] = useState<AuthorData[]>([]);
     const [pages, setPages] = useState<TweetRenderType[][][] | null>(null)
     const [dateSpan, setDateSpan] = useState<[Date, Date]>([new Date(), new Date()])
+    const navigate = useNavigate();
+
+    function printBook() {
+        ipcRenderer.invoke('print', pages, dataProfile, dateSpan);
+    }
     
     const updatePages = (pages: TweetRenderType[][][]) => {
         const last_page = pages[pages.length - 1]
@@ -40,11 +46,16 @@ export default function CustomizeBook()
     return (
         <div className="h-100">
         {pages && 
+            <>
+            <button className="backButton" onClick={() => navigate("/") } />
+            <button className="printButton" onClick={printBook} />
             <div className="previewFrame">
                 <div className="previewScale">
                     <Book pages={pages} preview={true} dataProfile={dataProfile} dateSpan={dateSpan}/>
                 </div>
-            </div>}
+            </div>
+            </>
+        }
         {pages === null && tweets.length > 0 && <BookBuilder tweets={tweets} authors={authors} dataProfile={dataProfile} bookCallback={updatePages}/>}
         </div>
     )
