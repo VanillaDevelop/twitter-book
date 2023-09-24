@@ -9,7 +9,7 @@ export default function TweetPage(props : {preview: boolean, tweets: TweetRender
 
     return (
         <div className={`page ${props.preview ? "preview" : ""}`}>
-            <div className={`pageContent ${props.page_number % 2 == 0 ? 'even' : 'odd'}`}>
+            <div className={`pageContent ${props.page_number % 2 == 0 ? 'odd' : 'even'}`}>
                 <div className="pageColumn">
                     {first_col}
                 </div>

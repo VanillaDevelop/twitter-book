@@ -1,0 +1,30 @@
+.titlePage
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.headerImage
+{
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    margin-bottom: 50px;
+}
+
+.bookHeading
+{
+    font-size: 96px;
+    font-weight: 600;
+    margin-bottom: 50px;
+}
+
+.bookSubtitle
+{
+    font-size: 48px;
+    font-weight: 400;
+    margin-bottom: 50px;
+}
