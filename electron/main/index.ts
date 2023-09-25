@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
+import { app, BrowserWindow, shell, protocol } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import { update } from './update'

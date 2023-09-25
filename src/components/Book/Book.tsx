@@ -1,20 +1,34 @@
-import { DataProfileType, TweetRenderType } from "@/types";
 import "./Book.scss"
 import TweetPage from "./TweetPage";
 import TitlePage from "./TitlePage";
+import { useContext } from "react";
+import { CurrentBookContext } from "@/contexts/CurrentBookContext";
+import React from "react";
 
-export default function Book(props: {pages: TweetRenderType[][][], preview: boolean, dataProfile: DataProfileType, dateSpan: [Date, Date]})
+function Book(props: {preview: boolean})
 {
-    const page_elements = props.pages.map((page, index) => {
+    const {pages, dataProfile, dateSpan} = useContext(CurrentBookContext).currentBook;
+
+    const page_elements = pages.map((page, index) => {
         return <TweetPage preview={props.preview} tweets={page} page_number={index} key={index} />;
     });
 
     return (
         <>
             <div className={`book ${props.preview ? "preview" : ""}`}>
-                <TitlePage preview={props.preview} dataProfile={props.dataProfile} dateSpan={props.dateSpan} />
+                <TitlePage preview={props.preview} dataProfile={dataProfile!} dateSpan={dateSpan} />
                 {page_elements}
             </div>
         </>
     )
 }
+
+const BookPrintWrapper = React.forwardRef<HTMLDivElement, {preview: boolean}>((props, ref) => {
+    return (
+      <div ref={ref}>
+        <Book preview={props.preview} />
+      </div>
+    );
+});
+
+export default  BookPrintWrapper
