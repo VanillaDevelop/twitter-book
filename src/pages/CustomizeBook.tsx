@@ -6,10 +6,7 @@ import { AuthorData, TweetItemType, TweetRenderType } from '@/types';
 import { getAuthors, getTweets } from '@/functions/renderer_utils';
 import Book from '@/components/Book/Book';
 import BookBuilder from '@/components/Book/BookBuilder';
-import { ipcRenderer } from 'electron';
 import { CurrentBookContext } from '@/contexts/CurrentBookContext';
-import path from "path"
-import { APP_DATA_PATH } from '@/functions/general_utils';
 import ReactToPrint from 'react-to-print';
 
 export default function CustomizeBook()
@@ -25,12 +22,8 @@ export default function CustomizeBook()
     const componentRef = useRef(null);
 
     function printBook() {
+        setPreview(false);
         setPreview(true);
-        const exportPath = path.join(APP_DATA_PATH, dataProfile.uuid, "book.pdf") 
-        ipcRenderer.send('print', exportPath);
-        ipcRenderer.once('wrote-pdf', (event, arg) => {
-            setPreview(false);
-        })
     }
     
     const updatePages = (pages: TweetRenderType[][][]) => {
@@ -55,7 +48,6 @@ export default function CustomizeBook()
     }, [])
 
     return (
-        preview ? <Book preview={false}/> :
         <div className="h-100">
         {rendered && 
             <>
@@ -63,11 +55,12 @@ export default function CustomizeBook()
             <ReactToPrint
                 trigger={() => <button className="printButton" />}
                 content={() => componentRef.current}
+                pageStyle={`@page { size: 2480px 3508px; margin: 0; }`}
             />
             
             <div className="previewFrame">
                 <div className="previewScale">
-                    <Book preview={true} ref={componentRef}/>
+                    <Book preview={preview} ref={componentRef}/>
                 </div>
             </div>
             </>

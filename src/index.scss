@@ -63,14 +63,11 @@ body {
   align-items: center;
 }
 
-@media print {
-  html, body {
-    height: 100%; 
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  @page {
-    size: 210mm 297mm;
+@media print 
+{ 
+  html, body 
+  { 
+    height: initial !important; 
+    overflow: initial !important; 
   }
 }

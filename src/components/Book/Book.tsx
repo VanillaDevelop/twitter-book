@@ -25,7 +25,7 @@ function Book(props: {preview: boolean})
 
 const BookPrintWrapper = React.forwardRef<HTMLDivElement, {preview: boolean}>((props, ref) => {
     return (
-      <div ref={ref}>
+      <div ref={ref} className="bookWrapper">
         <Book preview={props.preview} />
       </div>
     );
