@@ -55,7 +55,7 @@ export default function CustomizeBook()
             <ReactToPrint
                 trigger={() => <button className="printButton" />}
                 content={() => componentRef.current}
-                pageStyle={`@page { size: 2480px 3508px; margin: 0; }`}
+                pageStyle={`@page { size: 2480px 3508px; margin: 0 !important; padding: 0 !important;}`}
             />
             
             <div className="previewFrame">
