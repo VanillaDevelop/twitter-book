@@ -7,7 +7,7 @@ import { getAuthors, getTweets } from '@/functions/renderer_utils';
 import Book from '@/components/Book/Book';
 import BookBuilder from '@/components/Book/BookBuilder';
 import { CurrentBookContext } from '@/contexts/CurrentBookContext';
-import ReactToPrint from 'react-to-print';
+import {useReactToPrint} from 'react-to-print';
 
 export default function CustomizeBook()
 {
@@ -17,13 +17,23 @@ export default function CustomizeBook()
     const [authors, setAuthors] = useState<AuthorData[]>([]);
     const {setCurrentBook} = useContext(CurrentBookContext);
     const [rendered, setRendered] = useState(false);
-    const [preview, setPreview] = useState(false); 
+    const [preview, setPreview] = useState(true); 
     const navigate = useNavigate();
     const componentRef = useRef(null);
+    const handlePrint = useReactToPrint({
+        content: () => componentRef.current,
+        pageStyle: `@page { size: 2480px 3508px; margin: 0 !important; padding: 0 !important;}`,
+    });
 
     function printBook() {
         setPreview(false);
-        setPreview(true);
+        //THE BIG CHEESE ONCE AGAIN
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                handlePrint();
+                setPreview(true);
+            })
+        })
     }
     
     const updatePages = (pages: TweetRenderType[][][]) => {
@@ -52,11 +62,7 @@ export default function CustomizeBook()
         {rendered && 
             <>
             <button className="backButton" onClick={() => navigate("/") } />
-            <ReactToPrint
-                trigger={() => <button className="printButton" />}
-                content={() => componentRef.current}
-                pageStyle={`@page { size: 2480px 3508px; margin: 0 !important; padding: 0 !important;}`}
-            />
+            <button className="printButton" onClick={printBook} />
             
             <div className="previewFrame">
                 <div className="previewScale">
