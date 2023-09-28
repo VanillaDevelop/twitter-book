@@ -2,7 +2,7 @@ import { DataProfileType } from "@/types";
 import "./TweetPage.scss";
 import "./TitlePage.scss";
 import path from "path";
-import { APP_DATA_PATH } from "@/functions/general_utils";
+import { APP_DATA_PATH, formatDate } from "@/functions/general_utils";
 
 export default function TitlePage(props : {dataProfile: DataProfileType, preview: boolean, dateSpan: [Date, Date]}) 
 {
@@ -15,7 +15,7 @@ export default function TitlePage(props : {dataProfile: DataProfileType, preview
                 <div className="titlePage">
                     <img src={profile_image} className="headerImage"/>
                     <h1 className="bookHeading">@{props.dataProfile.twitter_handle}</h1>
-                    <p className="bookSubtitle">A collection of Tweets from {props.dateSpan[0].toLocaleDateString()} to {props.dateSpan[1].toLocaleDateString()}</p>
+                    <p className="bookSubtitle">A collection of Tweets from {formatDate(props.dateSpan[0], false)} to {formatDate(props.dateSpan[1], false)}</p>
                 </div>
             </div>
         </div>

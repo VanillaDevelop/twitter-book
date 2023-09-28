@@ -1,6 +1,6 @@
 import { AuthorData, DataProfileType, TweetRelation, TweetRole, TweetType } from "@/types";
 import "./DisplayTweet.scss"
-import { APP_DATA_PATH } from "@/functions/general_utils";
+import { APP_DATA_PATH, formatDate } from "@/functions/general_utils";
 import path from "path";
 import { formatText } from "@/functions/renderer_utils";
 import TweetMedia from "./TweetMedia";
@@ -26,7 +26,7 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
                     {props.tweet_role === TweetRole.HasSiblingResponse && <div className="tweet_sibling"></div>}
                 </div>
                 <div className="tweet_content">
-                    <div className="tweet_date">{props.tweet.created_at.toLocaleString()}</div>
+                    <div className="tweet_date">{formatDate(props.tweet.created_at)}</div>
                     <div className="tweet_author">{props.author?.display_name ?? "Unknown"} {props.author && <>(@{props.author.handle})</>}</div>
                     <div className="tweet_text" dangerouslySetInnerHTML={{__html: tweet_text_formatted}}>
                     </div>

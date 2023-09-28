@@ -10,6 +10,17 @@ export const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/stat
 export const SHORTENED_URL_REGEX = /https?:\/\/t.co\/[a-zA-Z0-9]+/; 
 export const RT_REGEX = /RT @([a-zA-Z0-9_]+):?/;
 
+const date_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit'
+                                                        })
+const time_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        })
+
 /**
  * Parses a twitter archive data file to a Javascript object.
  * @param file_path The path to the twitter archive data file.
@@ -276,4 +287,18 @@ export function loadTweets(file_path: string) : TweetItemType[]
       }
     const tweets = JSON.parse(fs.readFileSync(file_path, "utf-8"), reviver)
     return tweets;
+}
+
+/**
+ * Formats a date object as a german-style date string.
+ * @param date The date object to format.
+ * @returns A string containing the formatted date.
+ */
+export function formatDate(date: Date, with_time: boolean = true) : string
+{
+    if(with_time)
+    {
+        return time_formatter.format(date);
+    }
+    return date_formatter.format(date);
 }
