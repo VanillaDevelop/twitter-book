@@ -2,7 +2,7 @@ import { DataProfileContext } from '@/contexts/DataProfileContext';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import "./PreviewBook.scss"
-import { AuthorData, CurrentBookType, TweetItemType } from '@/types';
+import { AuthorData, TweetItemType } from '@/types';
 import { getAuthors, getTweets } from '@/functions/renderer_utils';
 import Book from '@/components/Book/Book';
 import BookBuilder from '@/components/BookBuilder/BookBuilder';
@@ -15,24 +15,19 @@ export default function PreviewBook()
     const {dataProfiles} = useContext(DataProfileContext)
     const [tweets, setTweets] = useState<TweetItemType[]>([]);
     const [authors, setAuthors] = useState<AuthorData[]>([]);
-    const {currentBook, setCurrentBook} = useContext(CurrentBookContext);
-    const [preview, setPreview] = useState(true); 
+    const {currentBook} = useContext(CurrentBookContext);
     const navigate = useNavigate();
+    const [printing, setPrinting] = useState(false);
     const componentRef = useRef(null);
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         pageStyle: `@page { size: 2480px 3508px; margin: 0 !important; padding: 0 !important;}`,
+        onAfterPrint: () => setPrinting(false),
     });
 
     function printBook() {
-        setPreview(false);
-        //THE BIG CHEESE ONCE AGAIN
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                handlePrint();
-                setPreview(true);
-            })
-        })
+        setPrinting(true);
+        handlePrint();
     }
 
     const dataProfile = dataProfiles.find((profile) => profile.twitter_handle === username)!;
@@ -47,13 +42,16 @@ export default function PreviewBook()
         <div className="h-100">
         {currentBook.pages.length > 0 && 
             <>
-            <button className="backButton" onClick={() => navigate("/") } />
-            <button className="printButton" onClick={printBook} />
+            <button className="backButton" onClick={() => navigate("/")} disabled={printing} />
+            <button className="printButton" onClick={printBook} disabled={printing}/>
             
             <div className="previewFrame">
                 <div className="previewScale">
-                    <Book preview={preview} ref={componentRef}/>
+                    <Book preview={true}/>
                 </div>
+            </div>
+            <div className="hiddenBook">
+                <Book ref={componentRef} preview={false}/>
             </div>
             </>
         }

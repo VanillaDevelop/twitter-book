@@ -24,3 +24,10 @@
     -webkit-mask: url("images/print-solid.svg") no-repeat center;
     mask: url("images/print-solid.svg") no-repeat center;
   }
+
+  .hiddenBook {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    visibility: hidden;
+}
