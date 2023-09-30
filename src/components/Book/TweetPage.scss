@@ -16,7 +16,6 @@
     position: absolute;
     bottom: 100px;
     font-size: 48px;
-    font-weight: bold;
     &.odd
     {
         left: 150px;
@@ -30,11 +29,11 @@
 .pageContent {
     &.odd
     {
-        margin: 150px 227px 300px 150px;
+        margin: 150px 150px 300px 227px;
     }
     &.even
     {
-        margin: 150px 150px 300px 227px;
+        margin: 150px 227px 300px 150px;
     }
     display:flex;
     flex-direction:row;

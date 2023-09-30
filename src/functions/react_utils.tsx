@@ -1,8 +1,8 @@
 /**
  * Utility functions that return React components (or objects containing React components)
  */
-import DisplayTweet from "@/components/Book/DisplayTweet";
-import RemovedTweet from "@/components/Book/RemovedTweet";
+import DisplayTweet from "@/components/Tweet/DisplayTweet";
+import RemovedTweet from "@/components/Tweet/RemovedTweet";
 import { AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType, TweetRole } from "@/types";
 
 

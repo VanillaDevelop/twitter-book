@@ -21,9 +21,7 @@ export default function DataProfile(props: {user?: DataProfileType, children?: R
         }
     }
     
-    const {Modal, showModal} = useModal(ModalFooterType.Confirm, "Delete User?", deleteProfileCallback)
-
-    
+    const {Modal, showModal} = useModal(ModalFooterType.Confirm, "Delete User?", deleteProfileCallback)    
 
     return (
         <>

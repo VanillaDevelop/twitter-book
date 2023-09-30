@@ -4,6 +4,7 @@ import TitlePage from "./TitlePage";
 import { useContext } from "react";
 import { CurrentBookContext } from "@/contexts/CurrentBookContext";
 import React from "react";
+import EmptyPage from "./EmptyPage";
 
 function Book(props: {preview: boolean})
 {
@@ -17,6 +18,7 @@ function Book(props: {preview: boolean})
         <>
             <div className={`book ${props.preview ? "preview" : ""}`}>
                 <TitlePage preview={props.preview} dataProfile={dataProfile!} dateSpan={dateSpan} />
+                <EmptyPage preview={props.preview} />
                 {page_elements}
             </div>
         </>
