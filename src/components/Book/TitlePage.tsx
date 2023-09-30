@@ -8,17 +8,14 @@ export default function TitlePage(props : {dataProfile: DataProfileType, preview
 {
     const profile_image = props.dataProfile.profile_image_internal ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.dataProfile.profile_image_internal!) 
     : "images/unknownuser.png";
-    const banner_image = props.dataProfile.banner_internal ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.dataProfile.banner_internal!).replace(/\\/g, "/") : null;
+    const banner_image = props.dataProfile.banner_internal ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.dataProfile.banner_internal!) : null;
 
     function banner_wrapper() {
-        const img_element = <img src={profile_image} className="headerImage"/>
-        const banner_style = banner_image ? {backgroundImage: `url(${banner_image})`, border: "3px solid black"} : {};
 
         return (
             <div className="headerWrapper">
-                <div className="headerBanner" style={banner_style}>
-                    {img_element}
-                </div>
+                {banner_image && <img src={banner_image} className="headerBanner"/>}
+                <img src={profile_image} className={`${banner_image ? "headerImage" : "standaloneImage"}`}/>
             </div>
         );
     }
