@@ -38,14 +38,6 @@ export default function PreviewBook()
     const dataProfile = dataProfiles.find((profile) => profile.twitter_handle === username)!;
 
     useEffect(() => {
-            //reset the current book
-            const emptyBook = {
-                pages: [],
-                authors: [],
-                dataProfile: dataProfile,
-                dateSpan: [new Date(), new Date()]
-            } as CurrentBookType;
-            setCurrentBook(emptyBook);
             setTweets(getTweets(dataProfile.uuid));
             setAuthors(getAuthors(dataProfile.uuid));
         }

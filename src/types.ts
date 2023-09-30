@@ -135,4 +135,5 @@ export interface CurrentBookContextType
 {
     currentBook: CurrentBookType;
     setCurrentBook: (book: CurrentBookType) => void;
+    resetCurrentBook: () => void;
 }
