@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { ArchiveTweetType, AuthorData, DataProfileType, TweetItemType } from "@/types";
+import { ArchiveTweetType, AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType, TweetRole } from "@/types";
 import path from "path";
 import { ipcRenderer } from "electron";
 import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive, loadTweets } from "./general_utils";
