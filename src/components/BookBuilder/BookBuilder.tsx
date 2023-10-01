@@ -9,11 +9,11 @@ export default function BookBuilder(props: {tweets: TweetItemType[], authors: Au
 {
     const {setCurrentBook} = useContext(CurrentBookContext);
     const heightMeasureElem = useRef<HTMLDivElement>(null);
-    const [measureTweet, setMeasureTweet] = useState<JSX.Element | null>(null);
+    const [measureTweet, setMeasureTweet] = useState<React.JSX.Element | null>(null);
     const [progress, setProgress] = useState(0);
 
     // Function to measure the height of a rendered tweet
-    async function getTweetHeight(rendered_tweet: JSX.Element): Promise<number>
+    async function getTweetHeight(rendered_tweet: React.JSX.Element): Promise<number>
     {
         return new Promise((resolve, reject) => {
             setMeasureTweet(rendered_tweet);

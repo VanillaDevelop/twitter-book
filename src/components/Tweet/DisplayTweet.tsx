@@ -1,9 +1,8 @@
 import { AuthorData, DataProfileType, TweetRelation, TweetRole, TweetType } from "@/types";
 import "./DisplayTweet.scss"
 import { APP_DATA_PATH } from "@/functions/general_utils";
-import {formatDate} from "@/functions/renderer_utils"
+import {formatDate, formatText} from "@/functions/renderer_utils"
 import path from "path";
-import { formatText } from "@/functions/renderer_utils";
 import TweetMedia from "./TweetMedia";
 import ExternalLink from "../ExternalLink/ExternalLink";
 
@@ -11,8 +10,8 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
 {
     const profile_image = props.author?.profile_image ? "app:///" + path.join(APP_DATA_PATH, props.dataProfile.uuid, "structured_data", "media", props.author.profile_image.internal_name!) 
         : "images/unknownuser.png"
-    const media_elements = props.tweet.media.map((media) => <TweetMedia media={media} dataProfile={props.dataProfile}/>)
-    const urls = props.tweet.urls.map((url) => <ExternalLink url={url}>{url}</ExternalLink>)
+    const media_elements = props.tweet.media.map((media) => <TweetMedia media={media} dataProfile={props.dataProfile} key={media.internal_name}/>)
+    const urls = props.tweet.urls.map((url) => <ExternalLink url={url} key={url}>{url}</ExternalLink>)
     const tweet_text_formatted = formatText(props.tweet.text)
 
     return (

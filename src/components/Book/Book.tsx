@@ -1,9 +1,8 @@
 import "./Book.scss"
 import TweetPage from "./TweetPage";
 import TitlePage from "./TitlePage";
-import { useContext } from "react";
+import { forwardRef, useContext } from "react";
 import { CurrentBookContext } from "@/contexts/CurrentBookContext";
-import React from "react";
 import EmptyPage from "./EmptyPage";
 
 function Book(props: {preview: boolean})
@@ -11,7 +10,7 @@ function Book(props: {preview: boolean})
     const {pages, dataProfile, dateSpan} = useContext(CurrentBookContext).currentBook;
 
     const page_elements = pages.map((page, index) => {
-        return <TweetPage preview={props.preview} tweets={page} page_number={index} key={index} />;
+        return <TweetPage preview={props.preview} tweets={page} page_number={index} key={page[0][0].id} />;
     });
 
     return (
@@ -25,7 +24,7 @@ function Book(props: {preview: boolean})
     )
 }
 
-const BookPrintWrapper = React.forwardRef<HTMLDivElement, {preview: boolean}>((props, ref) => {
+const BookPrintWrapper = forwardRef<HTMLDivElement, {preview: boolean}>((props, ref) => {
     return (
       <div ref={ref} className="bookWrapper">
         <Book preview={props.preview} />

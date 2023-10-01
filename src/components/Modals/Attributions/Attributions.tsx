@@ -5,7 +5,7 @@ import ExternalLink from "@/components/ExternalLink/ExternalLink";
 
 export default function Attributions()
 {
-    const {Modal, showModal, hideModal} = useModal(ModalFooterType.None, "Attributions")
+    const {Modal, showModal} = useModal(ModalFooterType.None, "Attributions")
 
     return (
         <>
