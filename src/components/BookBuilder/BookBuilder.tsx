@@ -7,7 +7,7 @@ import { CurrentBookContext } from "@/contexts/CurrentBookContext";
 export default function BookBuilder(props: {tweets: TweetItemType[], authors: AuthorData[], 
                                             dataProfile: DataProfileType})
 {
-    const {setCurrentBook} = useContext(CurrentBookContext);
+    const {setCurrentBook} = useContext(CurrentBookContext)!;
     const heightMeasureElem = useRef<HTMLDivElement>(null);
     const [measureTweet, setMeasureTweet] = useState<React.JSX.Element | null>(null);
     const [progress, setProgress] = useState(0);

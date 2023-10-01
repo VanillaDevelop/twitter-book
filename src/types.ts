@@ -133,7 +133,6 @@ export interface CurrentBookType
 
 export interface CurrentBookContextType
 {
-    currentBook: CurrentBookType;
-    setCurrentBook: (book: CurrentBookType) => void;
-    resetCurrentBook: () => void;
+    currentBook: CurrentBookType | null;
+    setCurrentBook: React.Dispatch<React.SetStateAction<CurrentBookType | null>>
 }

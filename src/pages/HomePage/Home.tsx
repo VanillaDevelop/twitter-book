@@ -5,7 +5,7 @@ import Attributions from "@/components/Modals/Attributions/Attributions";
 
 export default function Home()
 {
-    const {dataProfiles} = useContext(DataProfileContext)
+    const {dataProfiles} = useContext(DataProfileContext)!
     
     return (
             <div className="fullScreen center-flex-column">

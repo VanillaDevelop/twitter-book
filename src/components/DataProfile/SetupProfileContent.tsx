@@ -6,11 +6,11 @@ import { useNavigate } from "react-router-dom"
 export default function SetupProfileContent(props : {user: DataProfileType})
 {
     const navigate = useNavigate()
-    const {resetCurrentBook} = useContext(CurrentBookContext)
+    const {setCurrentBook} = useContext(CurrentBookContext)!;
 
     function handleCreation()
     {
-        resetCurrentBook()
+        setCurrentBook(null)
         navigate(`/book/${props.user?.twitter_handle}`)
     }
 

@@ -12,7 +12,7 @@ export default function CollectProfile()
     const [user, setUser] = useState<DataProfileType | undefined>();
     const {username} = useParams();
     const [parsingState, setParsingState] = useState(0);
-    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)
+    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)!
     const navigate = useNavigate();
 
     const {Modal, showModal} = useModal(ModalFooterType.None, "Warning")

@@ -12,10 +12,10 @@ import {useReactToPrint} from 'react-to-print';
 export default function PreviewBook()
 {
     const {username} = useParams();
-    const {dataProfiles} = useContext(DataProfileContext)
+    const {dataProfiles} = useContext(DataProfileContext)!
     const [tweets, setTweets] = useState<TweetItemType[]>([]);
     const [authors, setAuthors] = useState<AuthorData[]>([]);
-    const {currentBook} = useContext(CurrentBookContext);
+    const {currentBook} = useContext(CurrentBookContext)!;
     const navigate = useNavigate();
     const [printing, setPrinting] = useState(false);
     const componentRef = useRef(null);
@@ -40,7 +40,7 @@ export default function PreviewBook()
 
     return (
         <div className="h-100">
-        {currentBook.pages.length > 0 && 
+        {currentBook && 
             <>
             <button className="backButton" onClick={() => navigate("/")} disabled={printing} />
             <button className="printButton" onClick={printBook} disabled={printing}/>
@@ -55,7 +55,7 @@ export default function PreviewBook()
             </div>
             </>
         }
-        {currentBook.pages.length == 0 && tweets.length > 0 && <BookBuilder tweets={tweets} authors={authors} dataProfile={dataProfile}/>}
+        {!currentBook && tweets.length > 0 && <BookBuilder tweets={tweets} authors={authors} dataProfile={dataProfile}/>}
         </div>
     )
 }

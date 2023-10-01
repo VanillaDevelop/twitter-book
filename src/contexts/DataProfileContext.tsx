@@ -1,11 +1,10 @@
 import { DataProfileContextType, DataProfileType } from "@/types";
-import {ReactNode, createContext, useEffect} from "react";
+import {ReactNode, createContext, useEffect, useMemo, useState} from "react";
 import fs from "fs";
 import path from "path";
-import {useState} from "react";
 import { APP_DATA_PATH } from "@/functions/general_utils";
 
-export const DataProfileContext = createContext<DataProfileContextType>({ dataProfiles: [], setDataProfiles: () => {} });
+export const DataProfileContext = createContext<DataProfileContextType | null>(null);
 
 export const DataProfileProvider = ({ children }: { children: ReactNode }) => {
     const [dataProfiles, setDataProfiles] = useState<DataProfileType[]>([]);
@@ -29,8 +28,10 @@ export const DataProfileProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
+    const value = useMemo(() => ({ dataProfiles, setDataProfiles: setProfilesExternal }), [dataProfiles]);
+
     return (
-        <DataProfileContext.Provider value={{ dataProfiles, setDataProfiles: setProfilesExternal }}>
+        <DataProfileContext.Provider value={value}>
             {children}
         </DataProfileContext.Provider>
     );

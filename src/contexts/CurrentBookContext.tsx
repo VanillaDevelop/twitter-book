@@ -1,20 +1,16 @@
-import { CurrentBookContextType, CurrentBookType } from "@/types";
-import {ReactNode, createContext, useState, useMemo} from "react";
+import { ReactNode, createContext, useState, useMemo } from 'react';
+import { CurrentBookContextType, CurrentBookType } from '@/types';
 
-export const CurrentBookContext = createContext<CurrentBookContextType>({ currentBook: {pages: [], dateSpan: [new Date(), new Date()]}, setCurrentBook: () => {}, resetCurrentBook: () => {}});
+// Set the default context value to null
+export const CurrentBookContext = createContext<CurrentBookContextType | null>(null);
 
 export const CurrentBookProvider = ({ children }: { children: ReactNode }) => {
-    const [currentBook, setCurrentBook] = useState<CurrentBookType>({pages: [], dateSpan: [new Date(), new Date()]});
-    
-    function resetCurrentBook()
-    {
-        setCurrentBook({pages: [], dateSpan: [new Date(), new Date()]});
-    }
+    const [currentBook, setCurrentBook] = useState<CurrentBookType | null>(null);
 
-    const value = useMemo(() => {
-        return { currentBook, setCurrentBook, resetCurrentBook };
-    }
-    , [currentBook]);
+    const value = useMemo(() => ({
+        currentBook,
+        setCurrentBook,
+    }), [currentBook]);
 
     return (
         <CurrentBookContext.Provider value={value}>

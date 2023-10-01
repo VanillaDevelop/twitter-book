@@ -10,7 +10,7 @@ import { deleteProfile } from "@/functions/renderer_utils";
 export default function DataProfile(props: {user?: DataProfileType, children?: ReactNode, small: boolean, moving: string, animationCallback: () => void})
 {    
     const profile_picture = props.user?.profile_image_internal ? path.join(APP_DATA_PATH, props.user.uuid, "structured_data", "media", props.user.profile_image_internal) : "images/unknownuser.png"
-    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext);
+    const {dataProfiles, setDataProfiles} = useContext(DataProfileContext)!;
     function deleteProfileCallback(confirm: boolean) 
     {
         if(confirm){

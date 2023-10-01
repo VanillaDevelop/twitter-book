@@ -5,7 +5,7 @@ import { DataProfileContext } from "@/contexts/DataProfileContext"
 export default function NewProfileContent(props : {addPopUp: (popUpText: string) => void})
 {
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const profileContext = useContext(DataProfileContext)
+    const profileContext = useContext(DataProfileContext)!
     const [buttonDisabled, setButtonDisabled] = useState(false)
 
     const handleImportDataClick = () => {
