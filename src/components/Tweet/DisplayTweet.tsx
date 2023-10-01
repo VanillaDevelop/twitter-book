@@ -1,6 +1,7 @@
 import { AuthorData, DataProfileType, TweetRelation, TweetRole, TweetType } from "@/types";
 import "./DisplayTweet.scss"
-import { APP_DATA_PATH, formatDate } from "@/functions/general_utils";
+import { APP_DATA_PATH } from "@/functions/general_utils";
+import {formatDate} from "@/functions/renderer_utils"
 import path from "path";
 import { formatText } from "@/functions/renderer_utils";
 import TweetMedia from "./TweetMedia";

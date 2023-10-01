@@ -1,10 +1,58 @@
+/**
+ * Utility functions that are called directly from a component in the renderer process.
+ */
 import JSZip from "jszip";
 import fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
-import { ArchiveTweetType, AuthorData, DataProfileType, TweetItemType, TweetRelation, TweetRenderType, TweetRole } from "@/types";
+import { ArchiveTweetType, AuthorData, DataProfileType, TweetItemType } from "@/types";
 import path from "path";
 import { ipcRenderer } from "electron";
 import { getDataFromTwitterFile, APP_DATA_PATH, unzipFile, getDataFromTwitterFileString, createNewProfile, exportTweetFromTwitterArchive, loadTweets } from "./general_utils";
+
+const date_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit'
+                                                        });
+const time_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        });
+
+/**
+ * Returns author data for the given user profile.
+ * @param uuid The UUID of the user to get author data for.
+ * @returns An array of AuthorData objects.
+ */
+export function getAuthors(uuid: string) : AuthorData[]
+{
+    return JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), "utf-8"));
+}
+
+/**
+ * Returns tweet items for the given user profile.
+ * @param uuid The UUID of the user to get tweet items for.
+ * @returns An array of TweetItemType objects.
+ */
+export function getTweets(uuid: string) : TweetItemType[]
+{
+    return loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"));
+}
+
+/**
+ * Formats a date object as a german-style date string.
+ * @param date The date object to format.
+ * @returns A string containing the formatted date.
+ */
+export function formatDate(date: Date, with_time: boolean = true) : string
+{
+    if(with_time)
+    {
+        return time_formatter.format(date);
+    }
+    return date_formatter.format(date);
+}
 
 /**
  * Attempts to reset the scraper instance on the main process side.
@@ -321,7 +369,7 @@ export function cleanupDirectory(uuid: string)
  * @param tweet_id The ID of the tweet to get.
  * @returns A promise that resolves to a TweetItemType object if the tweet was found, or null if there was an error
  */
-export async function getTweetById(tweet_id: string) : Promise<TweetItemType | null>
+async function getTweetById(tweet_id: string) : Promise<TweetItemType | null>
 {
     return new Promise((resolve, reject) => {
         ipcRenderer.once("tweet-return", (event, data : TweetItemType | null ) => {
@@ -341,7 +389,7 @@ export async function getTweetById(tweet_id: string) : Promise<TweetItemType | n
  * @param handle The handle of the author to get.
  * @returns A promise that resolves to an AuthorData object if the author was found, or null if there was an error.
  */
-export async function getAuthorByHandle(handle: string) : Promise<AuthorData | null>
+async function getAuthorByHandle(handle: string) : Promise<AuthorData | null>
 {
     return new Promise((resolve, reject) => {
         ipcRenderer.once("author-return", (event, data : (AuthorData | null)) => {
@@ -362,7 +410,7 @@ export async function getAuthorByHandle(handle: string) : Promise<AuthorData | n
  * @param uuid The UUID of the user to collect the image for.
  * @returns A promise that resolves to the name of the image file if the image was collected successfully, or null if there was an error.
  */
-export async function getImageByUrl(url: string, uuid: string) : Promise<string | null>
+async function getImageByUrl(url: string, uuid: string) : Promise<string | null>
 {
     return new Promise((resolve, reject) => {
         ipcRenderer.once("media-return", (event, success : (string | null)) => 
@@ -376,26 +424,6 @@ export async function getImageByUrl(url: string, uuid: string) : Promise<string 
         }
         , 10000);
     })
-}
-
-/**
- * Returns author data for the given user profile.
- * @param uuid The UUID of the user to get author data for.
- * @returns An array of AuthorData objects.
- */
-export function getAuthors(uuid: string) : AuthorData[]
-{
-    return JSON.parse(fs.readFileSync(path.join(APP_DATA_PATH, uuid, "structured_data", "authors.json"), "utf-8"));
-}
-
-/**
- * Returns tweet items for the given user profile.
- * @param uuid The UUID of the user to get tweet items for.
- * @returns An array of TweetItemType objects.
- */
-export function getTweets(uuid: string) : TweetItemType[]
-{
-    return loadTweets(path.join(APP_DATA_PATH, uuid, "structured_data", "tweets.json"));
 }
 
 /**

@@ -1,24 +1,18 @@
-import { AuthorData, DataProfileType, TweetItemType, TweetMediaType, TweetRenderType } from "@/types";
+/**
+ * Utility functions that are used in the main process. These functions are generally called via IPC from the renderer process.
+ */
+import { AuthorData, TweetItemType, TweetMediaType } from "@/types";
 import { Scraper } from "@the-convocation/twitter-scraper";
-import { BrowserWindow, ipcMain, shell } from "electron";
+import { ipcMain, shell } from "electron";
 import http from "http";
 import https from "https";
 import path from "path";
-import { join } from 'node:path'
 import fs from "fs";
 import { APP_DATA_PATH, exportTweetFromScraper } from "./general_utils";
 import { app } from "electron";
 
 let scraper = new Scraper();
 const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
-
-ipcMain.on('print', (event, pdfPath : string) => {
-    const win = BrowserWindow.fromWebContents(event.sender)!;
-    win.webContents.printToPDF({}).then(data => {
-      fs.writeFileSync(pdfPath, data);
-      event.sender.send('wrote-pdf', pdfPath);
-    });
-  });
 
 /**
  * Resets the scraper library to a new instance.

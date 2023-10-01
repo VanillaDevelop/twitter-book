@@ -2,7 +2,8 @@ import { DataProfileType } from "@/types";
 import "./TweetPage.scss";
 import "./TitlePage.scss";
 import path from "path";
-import { APP_DATA_PATH, formatDate } from "@/functions/general_utils";
+import { APP_DATA_PATH } from "@/functions/general_utils";
+import {formatDate} from "@/functions/renderer_utils"
 
 export default function TitlePage(props : {dataProfile: DataProfileType, preview: boolean, dateSpan: [Date, Date]}) 
 {

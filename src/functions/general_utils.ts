@@ -1,3 +1,6 @@
+/**
+ * Utility functions that are called from the main- or renderer process.
+ */
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -6,50 +9,16 @@ import { ArchiveTweetType, DataProfileType, MediaType, TweetItemType, TweetMedia
 import { Tweet } from "@the-convocation/twitter-scraper";
 
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
-export const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/;
-export const SHORTENED_URL_REGEX = /https?:\/\/t.co\/[a-zA-Z0-9]+/; 
-export const RT_REGEX = /RT @([a-zA-Z0-9_]+):?/;
-
-const date_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit'
-                                                        })
-const time_formatter = new Intl.DateTimeFormat("de-DE", {year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        })
-
-/**
- * Parses a twitter archive data file to a Javascript object.
- * @param file_path The path to the twitter archive data file.
- * @param enclosing The enclosing characters of the archive file (e.g., {} for objects, and [] for arrays)
- * @returns A Javascript object containing the data from the twitter archive data file.
- */
-export function getDataFromTwitterFile(file_path: string, enclosing: string) : any
-{    
-    const data = fs.readFileSync(file_path, "utf-8");
-    return getDataFromTwitterFileString(data, enclosing);
-}
-
-/**
- * Parses the content of a twitter archive data file to a Javascript object.
- * @param file_string The content of the twitter archive data file.
- * @param enclosing The enclosing characters of the archive file (e.g., {} for objects, and [] for arrays)
- * @returns A Javascript object containing the data from the twitter archive data file.
- */
-export function getDataFromTwitterFileString(file_string: string, enclosing: string) : any
-{
-    return JSON.parse(file_string.substring(file_string.indexOf(enclosing[0]), file_string.lastIndexOf(enclosing[1]) + 1));;
-}
+const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/;
+const SHORTENED_URL_REGEX = /https?:\/\/t.co\/[a-zA-Z0-9]+/; 
+const RT_REGEX = /RT @([a-zA-Z0-9_]+):?/;
 
 /**
  * Cleans the tweet text by removing superfluous information.
  * @param tweet_text The original tweet text.
  * @returns The cleaned tweet text.
  */
-export function cleanTweetText(tweet_text: string, urls: string[]) : {text: string, urls: string[]}
+function cleanTweetText(tweet_text: string, urls: string[]) : {text: string, urls: string[]}
 {
     let text = tweet_text;
     //remove leading RT @username if it exists and trim
@@ -75,6 +44,29 @@ export function cleanTweetText(tweet_text: string, urls: string[]) : {text: stri
     }
 
     return {text, urls: urls.slice(url_index, urls.length)};
+}
+
+/**
+ * Parses a twitter archive data file to a Javascript object.
+ * @param file_path The path to the twitter archive data file.
+ * @param enclosing The enclosing characters of the archive file (e.g., {} for objects, and [] for arrays)
+ * @returns A Javascript object containing the data from the twitter archive data file.
+ */
+export function getDataFromTwitterFile(file_path: string, enclosing: string) : any
+{    
+    const data = fs.readFileSync(file_path, "utf-8");
+    return getDataFromTwitterFileString(data, enclosing);
+}
+
+/**
+ * Parses the content of a twitter archive data file to a Javascript object.
+ * @param file_string The content of the twitter archive data file.
+ * @param enclosing The enclosing characters of the archive file (e.g., {} for objects, and [] for arrays)
+ * @returns A Javascript object containing the data from the twitter archive data file.
+ */
+export function getDataFromTwitterFileString(file_string: string, enclosing: string) : any
+{
+    return JSON.parse(file_string.substring(file_string.indexOf(enclosing[0]), file_string.lastIndexOf(enclosing[1]) + 1));;
 }
 
 /**
@@ -287,18 +279,4 @@ export function loadTweets(file_path: string) : TweetItemType[]
       }
     const tweets = JSON.parse(fs.readFileSync(file_path, "utf-8"), reviver)
     return tweets;
-}
-
-/**
- * Formats a date object as a german-style date string.
- * @param date The date object to format.
- * @returns A string containing the formatted date.
- */
-export function formatDate(date: Date, with_time: boolean = true) : string
-{
-    if(with_time)
-    {
-        return time_formatter.format(date);
-    }
-    return date_formatter.format(date);
 }
