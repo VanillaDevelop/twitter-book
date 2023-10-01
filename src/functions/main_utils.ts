@@ -3,13 +3,12 @@
  */
 import { AuthorData, TweetItemType, TweetMediaType } from "@/types";
 import { Scraper } from "@the-convocation/twitter-scraper";
-import { ipcMain, shell } from "electron";
+import { ipcMain, shell, app} from "electron";
 import http from "http";
 import https from "https";
 import path from "path";
 import fs from "fs";
 import { APP_DATA_PATH, exportTweetFromScraper } from "./general_utils";
-import { app } from "electron";
 
 let scraper = new Scraper();
 const MEDIA_PLACEHOLDER = path.join(app.getAppPath(), "public", "images", "image_not_available.png");
@@ -21,7 +20,7 @@ export function reset_scraper()
 {
     scraper = new Scraper();
 }
-ipcMain.on("reset-scraper", async (event) => {
+ipcMain.on("reset-scraper", (event) => {
     reset_scraper();
     event.reply('scraper-reset');
 });
@@ -68,9 +67,10 @@ export async function get_profile(handle: string) : Promise<AuthorData | null>
         }
     }
 }
-ipcMain.on("try-get-author", async (event, handle) => {
-    const reply = await get_profile(handle);
-    event.reply('author-return', reply);
+ipcMain.on("try-get-author", (event, handle) => {
+     get_profile(handle).then(reply => {
+        event.reply('author-return', reply);
+    });
 });
 
 
@@ -103,7 +103,6 @@ export async function get_media(web_url: string, uuid: string) : Promise<string 
                     if(err)
                     {
                         resolve(null);
-                        return;
                     }
                 });
                 resolve(path.basename(MEDIA_PLACEHOLDER));
@@ -127,16 +126,17 @@ export async function get_media(web_url: string, uuid: string) : Promise<string 
 
             fileStream.on('error', (err) => {
                 fs.unlink(path.join(media_folder, file_name), () => {});
-                reject(null);
+                reject(err);
             });
         }).on('error', (err) => {
-            reject(null);
+            reject(err);
         });
     });
 }
-ipcMain.on("try-get-media", async (event, web_url, uuid) => {
-    const reply = await get_media(web_url, uuid);
-    event.reply('media-return', reply);
+ipcMain.on("try-get-media", (event, web_url, uuid) => {
+    get_media(web_url, uuid).then((reply) => {
+        event.reply('media-return', reply);
+    })
 });
 
 /**
@@ -170,9 +170,10 @@ export async function get_tweet(tweet_id: string) : Promise<TweetItemType | null
 
     return exportTweetFromScraper(tweet);
 }
-ipcMain.on("try-get-tweet", async (event, tweet_id) => {
-    const reply = await get_tweet(tweet_id);
-    event.reply('tweet-return', reply);
+ipcMain.on("try-get-tweet", (event, tweet_id) => {
+    get_tweet(tweet_id).then(reply => {
+        event.reply('tweet-return', reply);
+    });
 });
 
 

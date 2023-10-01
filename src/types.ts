@@ -80,7 +80,7 @@ export interface TweetRenderType
 {
     id: string;
     height: number;
-    rendered_item: JSX.Element;
+    rendered_item: React.JSX.Element;
 }
 
 

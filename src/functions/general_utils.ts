@@ -9,9 +9,9 @@ import { ArchiveTweetType, DataProfileType, MediaType, TweetItemType, TweetMedia
 import { Tweet } from "@the-convocation/twitter-scraper";
 
 export const APP_DATA_PATH = path.join(os.homedir(), "AppData", "Roaming", "TwitterBook");
-const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/[a-zA-Z0-9_]+\/status\/([0-9]+)/;
+const LONG_TWEET_URL_REGEX = /https?:\/\/twitter.com\/\w+\/status\/(\d+)/;
 const SHORTENED_URL_REGEX = /https?:\/\/t.co\/[a-zA-Z0-9]+/; 
-const RT_REGEX = /RT @([a-zA-Z0-9_]+):?/;
+const RT_REGEX = /RT @(\w+):?/;
 
 /**
  * Cleans the tweet text by removing superfluous information.
@@ -166,7 +166,7 @@ export function exportTweetFromTwitterArchive(twitter_archive_tweet: ArchiveTwee
     if(urls.length > 0 && LONG_TWEET_URL_REGEX.test(urls[urls.length - 1]))
     {
         const last_url = urls.pop()!
-        qrt_tweet_source_id = last_url.match(LONG_TWEET_URL_REGEX)![1]
+        qrt_tweet_source_id = LONG_TWEET_URL_REGEX.exec(last_url)![1]
         //remove the short url from the tweet text, otherwise whacky things happen...
         const short_url = twitter_archive_tweet.tweet.entities.urls.find((urlObj) => urlObj.expanded_url === last_url)!.url
         twitter_archive_tweet.tweet.full_text = twitter_archive_tweet.tweet.full_text.replace(short_url, "").trim();

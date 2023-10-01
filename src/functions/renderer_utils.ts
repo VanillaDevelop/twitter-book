@@ -193,16 +193,16 @@ export async function CollectTweets(uuid: string) : Promise<boolean>
         if(tweet === null) continue;
         if(!tweet.qrt_tweet_source_id && !tweet.parent_tweet_id) continue;
 
-        let next_tweet_id;
+        let next_tweet_id : string;
         if(tweet.qrt_tweet_source_id)
         {
             next_tweet_id = tweet.qrt_tweet_source_id;
         }
-        else if(tweet.parent_tweet_id)
+        else
         {
-            next_tweet_id = tweet.parent_tweet_id;
+            next_tweet_id = tweet.parent_tweet_id!;
         }
-        if(tweets.find((tweet) => tweet.id === next_tweet_id!)) continue;
+        if(tweets.find((tweet) => tweet.id === next_tweet_id)) continue;
         
         const next_tweet = await getTweetById(next_tweet_id!);
         if (next_tweet === null)

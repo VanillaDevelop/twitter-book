@@ -73,7 +73,7 @@ export default function CollectProfile()
             //navigate back to collect page
             navigate('/collect')
         }
-        setUser(user!)
+        setUser(user)
     }, [])
 
     return (
@@ -129,17 +129,17 @@ export default function CollectProfile()
                             {
                                 parsingState === 0 
                                 ?
-                                <button onClick={() => {setUpProfile(user!.uuid, user!.twitter_handle).then(success => {
+                                <button onClick={() => {setUpProfile(user.uuid, user.twitter_handle).then(success => {
                                     if(!success)
                                     {
                                         showModal()
                                     }
                                     else
                                     {
-                                        const authors = getAuthors(user!.uuid)
-                                        const author = authors.find(author => author.handle === user!.twitter_handle)
+                                        const authors = getAuthors(user.uuid)
+                                        const author = authors.find(author => author.handle === user.twitter_handle)
                                         setDataProfiles((dataProfiles.map(profile => {
-                                            if(profile.uuid === user!.uuid)
+                                            if(profile.uuid === user.uuid)
                                             {
                                                 profile.is_setup = true
                                                 profile.banner_internal = author!.banner?.internal_name ?? undefined
@@ -148,7 +148,7 @@ export default function CollectProfile()
                                             }
                                             return profile;
                                         })))
-                                        cleanupDirectory(user!.uuid)
+                                        cleanupDirectory(user.uuid)
                                         navigate(`/`)
                                     }
                                 })}} className="parseTweetsButton">Parse Tweets</button>

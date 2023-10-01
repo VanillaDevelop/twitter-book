@@ -24,8 +24,11 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     const tweet_chain = prev_chain ?? [] as TweetRenderType[];
     //get children and determine the tweet type
     const children = tweet_children[tweet.id];
-    const has_children = children?.length ?? 0 > 0;
-    const tweet_role = !has_children && !has_siblings ? TweetRole.LastItem : has_children ? TweetRole.HasDirectResponse : TweetRole.HasSiblingResponse;
+    const has_children = (children?.length ?? 0) > 0;
+    let tweet_role;
+    if(!has_children && !has_siblings) tweet_role = TweetRole.LastItem;
+    else if(has_children) tweet_role = TweetRole.HasDirectResponse;
+    else tweet_role = TweetRole.HasSiblingResponse;
     //add the current tweet to the chain
     let rendered_tweet : React.ReactNode;
     if(tweet.item === null) 
@@ -34,7 +37,7 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
     }
     else 
     {
-        const author_handle = tweet.item!.direct_rt_author_handle ?? tweet.item!.author_handle
+        const author_handle = tweet.item.direct_rt_author_handle ?? tweet.item.author_handle
         const relation = tweet.item?.direct_rt_author_handle ? TweetRelation.Retweet : prev_relation
         const author = authors.find((author) => author.handle === author_handle)!;
         rendered_tweet = <DisplayTweet tweet={tweet.item} author={author} dataProfile={dataProfile} 
@@ -53,7 +56,7 @@ function buildTweetChain(tweet: TweetItemType, tweets: TweetItemType[], tweet_ch
         const b_time = tweets.find((tweet) => tweet.id === b.tweet)?.item?.created_at.getTime() ?? 0;
         return a_time - b_time;
     });
-    for (let i = 0; i < children?.length ?? 0; i++)
+    for (let i = 0; i < (children?.length ?? 0); i++)
     {
         const child_tweet = tweets.find((tweet) => tweet.id === children[i].tweet)!;
         const child_relation = children[i].relation;
