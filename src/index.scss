@@ -41,8 +41,8 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  -webkit-mask: url("images/circle-left-solid.svg") no-repeat center;
-  mask: url("images/circle-left-solid.svg") no-repeat center;
+  -webkit-mask: url("../public/images/circle-left-solid.svg") no-repeat center;
+  mask: url("../public/images/circle-left-solid.svg") no-repeat center;
 }
 
 .w60c

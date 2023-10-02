@@ -18,7 +18,7 @@ export default function DisplayTweet(props: {tweet : TweetType, author: AuthorDa
         <div className={`tweet ${props.tweet_role === TweetRole.LastItem ? "last_tweet" : ""}`}>
             <div className="tweet_main">
                 <div className="tweet_sidepanel">
-                    {profile_image && <img src={profile_image} className="profileImage"/>}
+                    <img src={profile_image} className="profileImage"/>
                     {props.prev_relation === TweetRelation.Reply && <img src="images/comment-dots-solid.svg" className="tweet_relation_topright"/>}
                     {props.prev_relation === TweetRelation.Quote && <img src="images/quote-left-solid.svg" className="tweet_relation_topright"/>}
                     {props.prev_relation === TweetRelation.Retweet && <img src="images/retweet-solid.svg" className="tweet_relation_bottom"/>}

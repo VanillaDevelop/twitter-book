@@ -7,7 +7,7 @@ export default function RemovedTweet(props: {prev_relation: TweetRelation})
         <div className="tweet">
             <div className="tweet_main">
                 <div className="tweet_sidepanel">
-                    <img src="public/images/unknownuser.png" className="profileImage"/>
+                    <img src="images/unknownuser.png" className="profileImage"/>
                     <div className="tweet_chain"></div>
                 </div>
                 <div className="tweet_content">
